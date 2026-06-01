@@ -67,7 +67,7 @@ jobs:
         # OBS: No deep history needed here; the artifact is downloaded, not rebuilt.
 
       - name: A2) Download the built distribution
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         # OBS: Major must match the upload-artifact major in pre-release.yml.
         with:
           name: dist
