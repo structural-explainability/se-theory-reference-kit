@@ -160,7 +160,7 @@ jobs:
       # === PUBLISH THE BUILT ARTIFACT FOR DOWNSTREAM JOBS ===
 
       - name: Z1) Upload built distribution as artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         # OBS: Pinned to v4 (GA). Bump to your standard latest major if desired;
         #      the upload/download majors must match each other.
         with:
