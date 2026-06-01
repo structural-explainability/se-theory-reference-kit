@@ -1,0 +1,170 @@
+# ============================================================
+# .github/workflows/pre-release.yml (pypi pre-release checks)
+# ============================================================
+# Updated: 2026-06-01
+
+# WHY-FILE: Pre-release gate. Validates the repo and builds the distribution
+#           once, then uploads it as the `dist` artifact so the release
+#           workflow publishes the exact bytes that were checked here.
+#
+# OBS: This workflow does not trigger on tags directly. It runs via
+#      workflow_call from release-pypi.yml (which is tag-triggered) and via
+#      manual workflow_dispatch. The tag-version assertion self-skips when
+#      not running on a tag, so manual dispatch is safe.
+#
+# OWNS:
+#   schema validation
+#   SE_MANIFEST.toml validation
+#   artifact integrity checks
+#   build-once: produces the `dist` artifact consumed by the release workflow
+
+name: Pre-Release Checks and Build
+
+on:
+  workflow_call:      # WHY: Called by release-pypi.yml on version tags.
+  workflow_dispatch:  # WHY: Manual trigger for ad hoc pre-release checks.
+
+permissions:          # WHY: Least privilege. This workflow only reads and checks.
+  contents: read
+
+env:
+  PYTHONUNBUFFERED: "1"       # WHY: Real-time logging.
+  PYTHONIOENCODING: "utf-8"   # WHY: Ensure UTF-8 encoding for international characters.
+
+jobs:
+  pre-release:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30   # WHY: Prevent hanging jobs. If over, it is likely stuck.
+    env:
+      PYTHON_VERSION: "3.15"
+
+    steps:
+
+      # === ASSEMBLE ===
+
+      - name: A1) Checkout repository with full history and tags
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0    # WHY: hatch-vcs needs full history to derive version from tags.
+          fetch-tags: true
+          ref: ${{ github.ref }}
+
+      - name: A2) Install uv (with caching and uv.lock awareness)
+        uses: astral-sh/setup-uv@v7
+        with:
+          enable-cache: true
+          cache-dependency-glob: "uv.lock"
+
+      - name: A3) Install Python ${{ env.PYTHON_VERSION }}
+        run: uv python install ${{ env.PYTHON_VERSION }}
+
+      - name: A4) Display versions
+        run: |
+          uv --version
+          uv run python --version
+
+      # === BASELINE BUILD (while git is pristine) ===
+
+      - name: B1) Extract plain version from tag (no leading 'v')
+        id: ver
+        shell: bash
+        run: |
+          if [[ "${GITHUB_REF_TYPE}" != "tag" ]]; then
+            echo "plain=" >> "$GITHUB_OUTPUT"
+            echo "Not running on a tag; skipping tag-version assertion."
+            exit 0
+          fi
+          echo "plain=${GITHUB_REF_NAME#v}" >> "$GITHUB_OUTPUT"
+
+      - name: B2) Verify git is clean before build
+        run: |
+          echo "Git status:"
+          git status --short
+          echo "Git describe:"
+          git describe --tags --always --dirty
+          if [[ $(git status --porcelain) ]]; then
+            echo "ERROR: Git tree is dirty before build!"
+            exit 1
+          fi
+
+      - name: B3) Build sdist + wheel
+        # WHY: hatch-vcs derives version from the git tag; build before uv sync
+        # so working-tree changes cannot invalidate the clean check above.
+        run: uv build
+
+      - name: B4) Ensure built artifact version matches tag
+        if: github.ref_type == 'tag'
+        shell: bash
+        run: |
+          set -e
+          TAG="${{ steps.ver.outputs.plain }}"
+          echo "Tag version: $TAG"
+          ls dist
+          if ! ls dist/*"$TAG"*.whl dist/*"$TAG"*.tar.gz >/dev/null 2>&1; then
+            echo "ERROR: Built artifact version does not match tag $TAG"
+            exit 1
+          fi
+          echo "Artifact version matches tag."
+
+      - name: B5) Verify built distribution artifacts
+        run: uvx twine check dist/*
+
+      - name: B6) Sync dependencies after build
+        run: uv sync --extra dev --extra docs --upgrade
+
+      # === CHECKS ===
+
+      - name: C1) Pyright
+        run: uv run pyright
+
+      - name: C2) Tests
+        run: uv run pytest
+
+      - name: C3) Ruff format check
+        run: uv run ruff format --check .
+
+      - name: C4) Ruff lint
+        run: uv run ruff check .
+
+      - name: C5) Build docs (gate)
+        # WHY: Fail here if docs are broken, before the irreversible PyPI publish.
+        # OBS: This is a validation build only; the release workflow rebuilds and
+        #      deploys docs in its own job. zensical.toml is required at release.
+        run: |
+          if [ ! -f "zensical.toml" ]; then
+            echo "ERROR: zensical.toml not found; docs are required for release." >> "$GITHUB_STEP_SUMMARY"
+            exit 1
+          fi
+          uv run zensical build
+
+      # === LOCAL CLI / MANIFEST CHECKS ===
+
+      - name: E0) Validate SE_MANIFEST.toml against schema
+        run: uvx --from se-manifest-schema se-manifest validate-manifest --path SE_MANIFEST.toml --strict
+
+      - name: E1) se-theory-reference --help
+        run: uv run se-theory-reference --help
+
+      - name: E2) se-theory-reference validate --help
+        run: uv run se-theory-reference validate --help
+
+      - name: E3) se-theory-reference scaffold --help
+        run: uv run se-theory-reference scaffold --help
+
+      - name: E4) se-theory-reference catalog --help
+        run: uv run se-theory-reference catalog --help
+
+      - name: E5) se-theory-reference inspect --help
+        run: uv run se-theory-reference inspect --help
+
+      # === PUBLISH THE BUILT ARTIFACT FOR DOWNSTREAM JOBS ===
+
+      - name: Z1) Upload built distribution as artifact
+        uses: actions/upload-artifact@v4
+        # OBS: Pinned to v4 (GA). Bump to your standard latest major if desired;
+        #      the upload/download majors must match each other.
+        with:
+          name: dist
+          path: dist/
+          if-no-files-found: error   # WHY: A release with no artifact is a failure.
+          retention-days: 1          # WHY: Only needed to hand off to the release run.

@@ -1,0 +1,210 @@
+# ============================================================
+# pyproject.toml (Python project configuration)
+# ============================================================
+# Updated: 2026-06-01 (SE Theory Reference Kit PyPi)
+# REQ.PYTHON: Python projects MUST include pyproject.toml as the single source of truth.
+# WHY: Centralizes project configuration.
+# CUSTOM: Update identity and build tool src folders.
+
+# ============================================================
+# SECTION 1: PROJECT IDENTITY (name, version, CUSTOM dependencies)
+# ============================================================
+
+[project]
+name = "se-theory-reference-kit" # Package distribution name (lowercase and dashes).
+readme = "README.md"
+requires-python = ">=3.15"
+dynamic = ["version"] # WHY: Version is computed from git tags at build time (see [tool.hatch.version] below).
+license = { file = "LICENSE" }
+authors = [
+    { name = "Structural Explainability", email = "se@structural-explainability.org" },
+]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Environment :: Console",
+    "Intended Audience :: Developers",
+    "Intended Audience :: Science/Research",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.15",
+    "Topic :: Software Development :: Libraries :: Python Modules",
+    "Topic :: Software Development :: Quality Assurance",
+    "Topic :: Text Processing :: Markup",
+    "Typing :: Typed",
+]
+keywords = [
+    "structural-explainability",
+    "accountable-record",
+    "se-theory-reference-kit",
+    "repository-verification",
+    "staged-verification",
+    "contract-validation",
+    "manifest-validation",
+    "diagnostics",
+    "auditability",
+    "traceability",
+    "accountability",
+    "conformance",
+]
+dependencies = []
+
+[project.optional-dependencies]
+dev = [
+    "build",
+    "hatchling",
+    "hatch-vcs",
+    "pre-commit",
+    "pyright",
+    "pytest",
+    "pytest-cov",
+    "ruff",
+]
+
+docs = [
+   # "mkdocs-gen-files",
+    "mkdocstrings-python",
+    "zensical",
+]
+
+[project.scripts]
+se-theory-reference = "se_theory_reference_kit.cli:main"
+
+[project.urls]
+Homepage = "https://github.com/structural-explainability/se-theory-reference-kit"
+Repository = "https://github.com/structural-explainability/se-theory-reference-kit"
+Documentation = "https://structural-explainability.github.io/se-theory-reference-kit/"
+Issues = "https://github.com/structural-explainability/se-theory-reference-kit/issues"
+Changelog = "https://github.com/structural-explainability/se-theory-reference-kit/blob/main/CHANGELOG.md"
+
+# ============================================================
+# SECTION 2: TOOL CONFIGURATION (Professional basics)
+# ============================================================
+
+# === PYRIGHT (TYPE CHECKING HELPS FIND COMMON ERRORS BEFORE THE CODE RUNS) ===
+
+[tool.pyright]
+# CUSTOM: static type checking. 'basic' catches bugs without dep-package noise.
+pythonVersion = "3.15"
+include = ["src"]   # always src, may add tests
+extraPaths = ["src"] # resolve `imports` from src/
+exclude = [
+    "**/__pycache__",
+    "**/node_modules",
+    "**/.*",
+    ".venv",
+    "dist",
+    "build"
+]
+reportMissingImports = "error"      # catch missing dependencies and typos in imports
+reportMissingTypeStubs = "warning"  # notice when a dep is untyped
+reportPrivateUsage = "none"         # allow _private access (e.g. _version.py)
+reportUnnecessaryTypeIgnoreComment = "warning"  # flag unnecessary # type: ignore comments to keep code clean and maintainable
+venvPath = "."  # WHERE to look for virtual environments (here: the project root).
+venv = ".venv"  # WHICH venv folder to use inside venvPath (the conventional name).
+typeCheckingMode = "strict" # CUSTOM: off | basic | standard | strict
+
+# === PYTEST (VERIFY LOGIC) ===
+
+[tool.pytest.ini_options]
+# WHY: Consistent test discovery and coverage visibility.
+minversion = "9.0"
+testpaths = ["tests"]
+addopts = "--cov=se_theory_reference_kit --cov-report=term-missing --cov-fail-under=60"
+
+# === RUFF (PYTHON FORMATTING AND LINTING) ===
+
+[tool.ruff]
+# WHY: Fast linting and formatting in one tool.
+exclude = [
+    ".eggs",
+    "*.egg-info",
+    ".ruff_cache",
+    ".venv",
+    "__pycache__",
+    "build",
+    "dist",
+    "site",
+]
+line-length = 88 # WHY: PEP 8 standard, wrap when possible.
+preview = false # WHY: Stable features only; avoid preview features.
+target-version = "py314" # Tooling parser target until Ruff supports py315 without preview.
+unsafe-fixes = false # WHY: Avoid potentially unsafe automatic fixes.
+
+[tool.ruff.format]
+# WHY: Formatter choices should be stable to keep diffs small and predictable.
+indent-style = "space" # See also .gitattributes for indent style.
+line-ending = "auto" # Match existing files and let .gitattributes handle it.
+quote-style = "preserve" # Preserve existing quote styles to minimize churn.
+
+[tool.ruff.lint]
+# WHY: Baseline + stricter categories:
+select = [
+    "E",  # Basic syntax and structural correctness
+    "F",  # Undefined names and unused imports
+    "W",  # Warnings that catch easy issues early
+    "I",  # Deterministic import ordering
+    "UP", # Modern Python constructs
+    "B",  # Common bug patterns
+
+    "PTH", # Prefer pathlib patterns
+    "C4",  # Comprehension correctness and clarity
+    "SIM", # Simplify obvious complexity
+    "RET", # Return practices
+
+    "D", # Docstring standards (see convention below)
+    "S", # Security checks (with deliberate exceptions)
+]
+ignore = [
+    "E501", # line length handled by formatter
+    "D203", # conflicts with D211
+    "D213", # conflicts with D212 (Google standard summary placement)
+    "S101", # allow assert (tests + internal invariants)
+]
+
+[tool.ruff.lint.isort]
+# WHY: Ordering imports helps keep code diffs (differences) readable.
+force-sort-within-sections = true
+
+# === PER-FILE IGNORES (DEPENDS ON DOCSTRING POLICY) ===
+
+[tool.ruff.lint.per-file-ignores]
+# WHY: Some files must not be auto-modified.
+"src/**/__init__.py" = ["F401"]     # Allow re-export patterns
+"src/**/_version.py" = ["ALL"]      # Auto-generated file (do not lint)
+"tests/**/*.py" = ["D", "B018", "B011", "S101"]
+"src/**/py.typed" = ["ALL"]
+
+# === CHOOSE PROJECT DOC STYLE ===
+
+[tool.ruff.lint.pydocstyle]
+# REQ: Google style is the project-wide docstring convention.
+convention = "google"   # ALT: "numpy" choose one, never mix.
+
+# ============================================================
+# SECTION 3: BUILD SYSTEM (boilerplate; CUSTOM src/ agreement)
+# ============================================================
+#
+# REQ.PROJECT: A build system MUST be declared for package discovery and publishing.
+# REQ.STRUCTURE: All importable code MUST live under src/.
+# WHY src/ layout: Prevents accidental imports from the repo root;
+#     ensures consistent behavior across IDEs, tests, CI, and PyPI.
+
+[build-system]
+build-backend = "hatchling.build"
+requires = ["hatchling", "hatch-vcs"]
+
+[tool.hatch.build.hooks.vcs]
+# WHY: Writes computed version into src/*/_version.py at build time.
+# CUSTOM: Must match src/ folders.
+version-file = "src/se_theory_reference_kit/_version.py"
+
+[tool.hatch.build.targets.wheel]
+# CUSTOM: Must match src/ folders.
+packages = ["src/se_theory_reference_kit"]  # REQ.PACKAGES: Discovery rooted at src/.
+
+[tool.hatch.version]
+# WHY: Version derived from git tags at build time
+source = "vcs"
+fallback-version = "0.1.0"              # Used when no git tags present (fresh clone, CI).
+tag-pattern = "^(?:v)?(?P<version>\\d+\\.\\d+\\.\\d+)$"

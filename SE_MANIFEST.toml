@@ -1,0 +1,111 @@
+# ============================================================
+# SE_MANIFEST.toml (Repository Declaration)
+# ============================================================
+
+schema = "se-manifest-schema"
+schema_url = "https://raw.githubusercontent.com/structural-explainability/se-manifest-schema/main/manifest-schema.toml"
+
+# === Framework Context ===
+
+[meta]
+framework = "Structural Explainability"
+framework_url = "https://github.com/structural-explainability"
+purpose = "Declares this repository's role in the Structural Explainability ecosystem."
+
+# === Repository Identity ===
+
+[repo]
+name = "se-theory-reference-kit"
+org = "structural-explainability"
+class = "engine"
+kind = "theory-reference-kit"
+status = "active"
+since = "2026"
+summary = "Shared Python tooling for scaffolding, validating, and exporting theory-reference artifacts that mirror Lean public surfaces in Structural Explainability theory repositories."
+
+# === Layer Position ===
+
+[layer]
+space = "formal-theory"
+role = "theory-reference-engine"
+
+# === Dependency Declarations ===
+
+[depends]
+required = []
+optional = [
+  { repo = "se-manifest-schema", kind = "tooling", version = "v0.4.1" },
+]
+
+# === Provided Artifacts ===
+
+[provides]
+artifacts = [
+  "theory-reference-loading-engine",
+  "theory-reference-validation-engine",
+  "theory-reference-scaffold-engine",
+  "lean-surface-coverage-engine",
+  "reference-artifact-export-engine",
+  "reference-catalog-export-engine",
+  "reference-validation-result-model",
+]
+
+# === Scope ===
+
+[scope]
+includes = [
+  "generic theory-reference index loading",
+  "generic theory-reference TOML artifact traversal",
+  "generic Lean declaration extraction",
+  "generic Lean public-surface coverage checks",
+  "generic reference artifact validation machinery",
+  "generic reference scaffolding and stub generation",
+  "generic generated JSON export machinery",
+  "generic theory-reference catalog export machinery",
+  "generic validation result model",
+  "generic strict-warning classification support",
+]
+
+excludes = [
+  "Lean theory semantics",
+  "formal correctness claims",
+  "theory-specific public symbol lists",
+  "theory-specific export artifact maps",
+  "neutral substrate definitions",
+  "transformation definitions",
+  "identity regime definitions",
+  "persistence definitions",
+  "structural explainability definitions",
+  "contract artifact packaging",
+  "contract dependency resolution",
+  "operational validation pipelines",
+  "domain-specific mappings",
+  "runtime systems",
+  "manifest schema authority",
+  "manifest validation rule ownership",
+  "claims of truth, correctness, legitimacy, obligation, or enforcement",
+]
+
+# === Validation ===
+
+[validation]
+entrypoint = "uv run se-manifest validate-manifest --path SE_MANIFEST.toml"
+strict_entrypoint = "uv run se-manifest validate-manifest --path SE_MANIFEST.toml --strict"
+tag_entrypoint = "uv run se-manifest check-version --require-tag"
+
+# === Governance ===
+
+[naming]
+pattern = "se-theory-reference-kit"
+
+[governance]
+authority = "structural-explainability"
+
+# === External references ===
+
+[citation]
+cff = "CITATION.cff"
+preferred = "software"
+
+[traceability]
+identifier_map = "none"

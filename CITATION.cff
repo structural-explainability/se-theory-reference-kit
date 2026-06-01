@@ -1,0 +1,48 @@
+# ============================================================
+# CITATION.cff (How to cite this project)
+# ============================================================
+
+# REQ.UNIVERSAL: Professional open projects SHOULD include this file.
+# USAGE: See https://citation-file-format.github.io/ for details.
+
+cff-version: "1.2.0"
+type: software
+
+title: "SE Theory: Reference Kit"
+version: "0.1.0"
+date-released: "2026-06-01"
+
+authors:
+  - family-names: Case
+    given-names: Denise M.
+    orcid: "https://orcid.org/0000-0001-6165-7389"
+    affiliation: "Northwest Missouri State University, School of Computer Science and Information Systems, Maryville, MO, USA"
+
+year: 2026
+repository-code: "https://github.com/structural-explainability/se-theory-reference-kit"
+url: "https://github.com/structural-explainability/se-theory-reference-kit"
+
+license: MIT
+
+abstract: >
+  SE Theory: Reference Kit is a shared Python package for Structural
+  Explainability theory repositories. It provides generic tooling for loading,
+  scaffolding, validating, and exporting theory-reference artifacts that mirror
+  Lean public surfaces. The package supplies reusable reference-validation and
+  export infrastructure while leaving Lean semantics, public symbol declarations,
+  and theory-specific artifact maps under the ownership of each theory
+  repository.
+
+keywords:
+  - structural-explainability
+  - theory-reference
+  - lean4
+  - formal-theory
+  - public-surface
+  - reference-artifacts
+  - validation
+  - scaffolding
+  - export
+  - python
+
+message: "If you use this work, please cite it using the metadata in this file."

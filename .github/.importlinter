@@ -1,0 +1,17 @@
+# .github/.importlinter
+# contract checks (should be all kept, 0 broken)
+# $env:PYTHONPATH = "src"
+# uvx --python 3.13 --from import-linter lint-imports --config .github/.importlinter
+
+[importlinter]
+root_package = se_theory_reference_kit
+
+[importlinter:contract:layers]
+name = SE reference kit layering
+type = layers
+layers =
+    se_theory_reference_kit.validation
+    se_theory_reference_kit.export
+    se_theory_reference_kit.reference
+    se_theory_reference_kit.declarations
+    se_theory_reference_kit.base

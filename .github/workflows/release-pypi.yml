@@ -1,0 +1,189 @@
+# ============================================================
+# .github/workflows/release-pypi.yml
+# (Release PyPI + docs via Zensical)
+# ============================================================
+# Updated: 2026-06-01 (pypi release workflow)
+
+# WHY-FILE: Publish a tagged release to PyPI and deploy docs to GitHub Pages.
+# REQ: Trigger ONLY on version tags like v1.2.3.
+# REQ: PyPI project must be configured for Trusted Publishing (OIDC).
+# REQ: Repo Settings -> Pages -> Build and deployment -> Source: GitHub Actions
+#
+# OBS: Three jobs, deliberately separated:
+#      1) pre-release  - validates and builds the dist once (reusable workflow).
+#      2) publish      - downloads that exact dist, creates the GitHub Release,
+#                        publishes to PyPI. No rebuild, no re-check.
+#      3) deploy-docs  - rebuilds and deploys docs. Runs AFTER publish so a docs
+#                        or Pages failure cannot fail an already-public release,
+#                        and carries the shared `github-pages` concurrency lane.
+
+name: Release (PyPI + Zensical docs)
+
+on:
+  push:
+    tags:
+      - "v*.*.*"
+
+permissions:
+  contents: read   # WHY: Workflow default is read-only; jobs elevate as needed.
+
+env:
+  PYTHONUNBUFFERED: "1"       # WHY: Real-time logging.
+  PYTHONIOENCODING: "utf-8"   # WHY: Ensure UTF-8 encoding for international characters.
+
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: false
+  # WHY: Serialize releases per tag and never cancel a release in progress.
+  # OBS: This governs the whole run. The deploy-docs job adds its own
+  #      `github-pages` group so it also serializes against other workflows
+  #      that deploy Pages (e.g. deploy-zensical.yml), since Pages is a single
+  #      deployment environment per repo.
+
+jobs:
+
+  # ------------------------------------------------------------
+  # 1) Validate and build once. Produces the `dist` artifact.
+  # ------------------------------------------------------------
+  pre-release:
+    uses: ./.github/workflows/pre-release.yml
+
+  # ------------------------------------------------------------
+  # 2) Publish the exact artifact that pre-release built and checked.
+  # ------------------------------------------------------------
+  publish:
+    needs: pre-release    # WHY: Never publish if pre-release checks fail.
+    runs-on: ubuntu-latest
+    timeout-minutes: 30   # WHY: Prevent hanging jobs. If over, it is likely stuck.
+    environment: pypi     # WHY: PyPI Trusted Publishing environment.
+    permissions:
+      contents: write     # WHY: Create the GitHub Release.
+      id-token: write     # WHY: PyPI Trusted Publishing (OIDC).
+    steps:
+
+      - name: A1) Checkout (minimal, for release context)
+        uses: actions/checkout@v6
+        # WHY: Provides git/repo context for the release step.
+        # OBS: No deep history needed here; the artifact is downloaded, not rebuilt.
+
+      - name: A2) Download the built distribution
+        uses: actions/download-artifact@v4
+        # OBS: Major must match the upload-artifact major in pre-release.yml.
+        with:
+          name: dist
+          path: dist
+
+      - name: A3) Extract plain version from tag (no leading 'v')
+        id: ver
+        shell: bash
+        run: echo "plain=${GITHUB_REF_NAME#v}" >> "$GITHUB_OUTPUT"
+
+      - name: A4) Verify downloaded artifact version matches tag
+        shell: bash
+        run: |
+          set -e
+          TAG="${{ steps.ver.outputs.plain }}"
+          echo "Tag version: $TAG"
+          ls dist
+          if ! ls dist/*"$TAG"*.whl dist/*"$TAG"*.tar.gz >/dev/null 2>&1; then
+            echo "ERROR: Downloaded artifact version does not match tag $TAG"
+            exit 1
+          fi
+          echo "Artifact version matches tag."
+
+      # === RELEASE AND PUBLISH ===
+
+      - name: D1) Create GitHub Release and upload artifacts
+        uses: softprops/action-gh-release@v3
+        with:
+          tag_name: ${{ github.ref_name }}
+          name: ${{ github.ref_name }}
+          generate_release_notes: true
+          files: |
+            dist/*.whl
+            dist/*.tar.gz
+          draft: false
+          prerelease: false
+          make_latest: true
+
+      - name: D2) Publish to PyPI (Trusted Publishing)
+        uses: pypa/gh-action-pypi-publish@release/v1
+        # OBS: Uploads dist/* by default; the downloaded artifact lands in dist/.
+
+  # ------------------------------------------------------------
+  # 3) Build and deploy docs. Isolated from publish on purpose.
+  # ------------------------------------------------------------
+  deploy-docs:
+    needs: publish    # WHY: Deploy docs only after a successful publish.
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    permissions:
+      contents: read  # WHY: Checkout source to build docs.
+      pages: write    # WHY: Deploy to GitHub Pages.
+      id-token: write # WHY: deploy-pages OIDC.
+    environment:
+      name: github-pages
+      url: ${{ steps.deploy.outputs.page_url }}
+    concurrency:
+      group: github-pages
+      cancel-in-progress: false
+      # WHY: Pages is a single environment per repo. This group is shared with
+      #      every other workflow that deploys Pages so two deploys never race.
+      #      Must be the identical string used in those workflows.
+    env:
+      PYTHON_VERSION: "3.15"
+    steps:
+
+      - name: A1) Checkout repository
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0    # WHY: hatch-vcs / version-aware docs may read tags.
+          fetch-tags: true
+          ref: ${{ github.ref }}
+
+      - name: A2) Configure GitHub Pages
+        uses: actions/configure-pages@v6
+
+      - name: A3) Install uv (with caching and uv.lock awareness)
+        uses: astral-sh/setup-uv@v7
+        with:
+          enable-cache: true
+          cache-dependency-glob: "uv.lock"
+
+      - name: A4) Install Python ${{ env.PYTHON_VERSION }}
+        run: uv python install ${{ env.PYTHON_VERSION }}
+
+      - name: A5) Sync dependencies (docs extras)
+        run: uv sync --extra dev --extra docs --upgrade
+
+      # === BUILD AND DEPLOY DOCS ===
+
+      - name: D1) Build docs with Zensical
+        run: |
+          if [ ! -f "zensical.toml" ]; then
+            echo "ERROR: zensical.toml not found; refusing to deploy." >> "$GITHUB_STEP_SUMMARY"
+            exit 1
+          fi
+          uv run zensical build
+        # WHY: Hard-fail on missing config rather than deploy nothing. Consistent
+        #      with deploy-zensical.yml and with the pre-release docs gate.
+
+      - name: D2) Verify site output exists
+        run: |
+          if [ ! -d "site" ]; then
+            echo "## Documentation build output missing" >> "$GITHUB_STEP_SUMMARY"
+            echo "Expected directory 'site/' was not created." >> "$GITHUB_STEP_SUMMARY"
+            echo "Check the Zensical build step and zensical.toml configuration." >> "$GITHUB_STEP_SUMMARY"
+            exit 1
+          fi
+        # OBS: Zensical outputs to site/ by default; update if zensical.toml differs.
+
+      - name: D3) Upload Pages artifact
+        uses: actions/upload-pages-artifact@v5
+        with:
+          path: site
+
+      - name: D4) Deploy to GitHub Pages
+        id: deploy
+        uses: actions/deploy-pages@v5
+        # OBS: page_url output feeds the environment URL above.
