@@ -62,7 +62,6 @@ dev = [
 ]
 
 docs = [
-   # "mkdocs-gen-files",
     "mkdocstrings-python",
     "zensical",
 ]

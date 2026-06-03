@@ -1,0 +1,247 @@
+# ============================================================
+# .accountability/surfaces.toml (Authority-gated surfaces)
+# ============================================================
+# Updated: 2026-06-02 (SE Theory)
+
+# REQ.ACCOUNTABILITY: Theory repositories SHOULD declare protected surfaces.
+# WHY: Identifies repository objects and roles where technical modification is
+# not sufficient authority; changes require human review and evidence.
+# CUSTOM: Update repository name, description, Lean module paths, and
+# verification commands for this repository.
+
+# NOTE: This file is an early accountable-surfaces manifest.
+# It records authority-bearing repository surfaces, their roles, review
+# requirements, evidence requirements, and permitted AI authority.
+# It identifies review obligations at the surface and role level.
+
+schema_version = "0.1.0"
+
+[repository]
+name = "se-theory-reference-kit"
+profile = "repository-protected-surface"
+description = "Shared Python tooling for scaffolding, validating, inspecting, cataloging, and exporting theory-reference artifacts that mirror Lean public surfaces."
+
+[[surface]]
+id = "project-configuration"
+object_kind = "file"
+paths = [
+"pyproject.toml",
+]
+description = "Project identity, Python version contract, dependencies, optional dependency groups, build metadata, tool configuration, and command exposure."
+
+[[surface.role]]
+kind = "project_identity_surface"
+requires_review = ["human_review"]
+requires_evidence = ["decision_note"]
+ai_max_authority = "drafting"
+
+[[surface.role]]
+kind = "python_version_contract"
+requires_review = ["human_review"]
+requires_evidence = ["decision_note", "verification_command_result"]
+ai_max_authority = "drafting"
+
+[[surface.role]]
+kind = "dependency_boundary"
+requires_review = ["human_review", "security_review"]
+requires_evidence = ["verification_command_result"]
+ai_max_authority = "drafting"
+
+[[surface.role]]
+kind = "optional_dependency_contract"
+requires_review = ["human_review"]
+requires_evidence = ["verification_command_result"]
+ai_max_authority = "drafting"
+
+[[surface.role]]
+kind = "public_command_surface"
+requires_review = ["human_review"]
+requires_evidence = ["decision_note", "verification_command_result"]
+ai_max_authority = "drafting"
+
+[[surface.role]]
+kind = "tool_configuration"
+requires_review = ["human_review"]
+requires_evidence = ["verification_command_result"]
+ai_max_authority = "drafting"
+
+[[surface]]
+id = "public-python-api"
+object_kind = "directory"
+paths = [
+"src/se_theory_reference_kit/**/*.py",
+]
+description = "Shared importable Python API and implementation used by theory repositories."
+
+[[surface.role]]
+kind = "public_contract"
+requires_review = ["human_review"]
+requires_evidence = ["verification_command_result"]
+ai_max_authority = "drafting"
+
+[[surface.role]]
+kind = "validation_rule"
+requires_review = ["human_review"]
+requires_evidence = ["decision_note", "verification_command_result"]
+ai_max_authority = "drafting"
+
+[[surface]]
+id = "cli-command-surface"
+object_kind = "directory"
+paths = [
+"src/se_theory_reference_kit/cli.py",
+"src/se_theory_reference_kit/commands/**/*.py",
+]
+description = "Public command surface for theory-reference validation, scaffolding, export, catalog, and inspection."
+
+[[surface.role]]
+kind = "public_command_surface"
+requires_review = ["human_review"]
+requires_evidence = ["decision_note", "verification_command_result"]
+ai_max_authority = "drafting"
+
+[[surface.role]]
+kind = "public_contract"
+requires_review = ["human_review"]
+requires_evidence = ["decision_note", "verification_command_result"]
+ai_max_authority = "drafting"
+
+[[surface]]
+id = "schema-and-reference-models"
+object_kind = "directory"
+paths = [
+"src/se_theory_reference_kit/declarations/**/*.py",
+"src/se_theory_reference_kit/reference/**/*.py",
+"src/se_theory_reference_kit/validation/**/*.py",
+"schema/**",
+"data/schema/**",
+]
+description = "Schema, declaration, registry, validation, and reference-artifact model surfaces."
+
+[[surface.role]]
+kind = "schema"
+requires_review = ["human_review", "schema_review"]
+requires_evidence = ["decision_note", "verification_command_result"]
+ai_max_authority = "drafting"
+
+[[surface.role]]
+kind = "validation_rule"
+requires_review = ["human_review"]
+requires_evidence = ["decision_note", "verification_command_result"]
+ai_max_authority = "drafting"
+
+[[surface.role]]
+kind = "public_contract"
+requires_review = ["human_review"]
+requires_evidence = ["decision_note", "verification_command_result"]
+ai_max_authority = "drafting"
+
+[[surface]]
+id = "lean-integration-boundary"
+object_kind = "directory"
+paths = [
+"src/se_theory_reference_kit/lean/**/*.py",
+]
+description = "Lean declaration discovery, module discovery, and public-surface integration boundary."
+
+[[surface.role]]
+kind = "theory_surface"
+requires_review = ["human_review", "theory_review"]
+requires_evidence = ["decision_note", "verification_command_result"]
+ai_max_authority = "drafting"
+
+[[surface.role]]
+kind = "validation_rule"
+requires_review = ["human_review"]
+requires_evidence = ["verification_command_result"]
+ai_max_authority = "drafting"
+
+[[surface]]
+id = "export-and-catalog-boundary"
+object_kind = "directory"
+paths = [
+"src/se_theory_reference_kit/export/**/*.py",
+]
+description = "Machine-readable export and catalog generation boundary."
+
+[[surface.role]]
+kind = "generated_output"
+requires_review = ["human_review"]
+requires_evidence = ["regeneration_record", "verification_command_result"]
+ai_max_authority = "drafting"
+
+[[surface.role]]
+kind = "public_contract"
+requires_review = ["human_review"]
+requires_evidence = ["decision_note", "verification_command_result"]
+ai_max_authority = "drafting"
+
+[[surface]]
+id = "tests-and-fixtures"
+object_kind = "directory"
+paths = [
+"tests/**",
+]
+description = "Test suite and fixtures that define expected behavior."
+
+[[surface.role]]
+kind = "validation_rule"
+requires_review = ["human_review"]
+requires_evidence = ["verification_command_result"]
+ai_max_authority = "drafting"
+
+[[surface]]
+id = "release-and-automation-authority"
+object_kind = "directory"
+paths = [
+".github/workflows/**",
+".github/dependabot.yml",
+".pre-commit-config.yaml",
+"uv.lock",
+]
+description = "Automation, release, dependency lock, and repository security authority."
+
+[[surface.role]]
+kind = "workflow_authority"
+requires_review = ["human_review", "security_review"]
+requires_evidence = ["decision_note", "verification_command_result"]
+ai_max_authority = "advisory"
+
+[[surface.role]]
+kind = "release_authority"
+requires_review = ["human_review", "release_review", "security_review"]
+requires_evidence = ["decision_note", "verification_command_result"]
+ai_max_authority = "advisory"
+
+[[surface]]
+id = "repository-governance"
+object_kind = "directory"
+paths = [
+".accountability/**",
+"AI_USE.md",
+"AGENTS.md",
+"SECURITY.md",
+"CONTRIBUTING.md",
+"DECISIONS.md",
+"README.md",
+]
+description = "Repository governance, contribution, AI-use, security, and decision records."
+
+[[surface.role]]
+kind = "documentation_contract"
+requires_review = ["human_review"]
+requires_evidence = ["decision_note"]
+ai_max_authority = "drafting"
+
+[[surface.role]]
+kind = "security_boundary"
+requires_review = ["human_review", "security_review"]
+requires_evidence = ["decision_note"]
+ai_max_authority = "advisory"
+
+[verification]
+commands = [
+"uv sync --extra dev --extra docs --upgrade",
+"uvx pre-commit run --all-files",
+"uv run pytest",
+]

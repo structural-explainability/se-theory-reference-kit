@@ -140,7 +140,7 @@ jobs:
       # === LOCAL CLI / MANIFEST CHECKS ===
 
       - name: E0) Validate SE_MANIFEST.toml against schema
-        run: uvx --from se-manifest-schema se-manifest validate-manifest --path SE_MANIFEST.toml --strict
+        run: uvx se-manifest-schema validate-manifest --path SE_MANIFEST.toml --strict
 
       - name: E1) se-theory-reference --help
         run: uv run se-theory-reference --help
@@ -161,8 +161,6 @@ jobs:
 
       - name: Z1) Upload built distribution as artifact
         uses: actions/upload-artifact@v7
-        # OBS: Pinned to v4 (GA). Bump to your standard latest major if desired;
-        #      the upload/download majors must match each other.
         with:
           name: dist
           path: dist/

@@ -72,7 +72,7 @@ uv run se-theory-reference catalog --help
 uv run se-theory-reference inspect --help
 
 # validate manifest file
-uvx --from se-manifest-schema se-manifest validate-manifest --path SE_MANIFEST.toml --strict
+uvx se-manifest-schema validate-manifest --path SE_MANIFEST.toml --strict
 
 git add -A
 uvx pre-commit run --all-files

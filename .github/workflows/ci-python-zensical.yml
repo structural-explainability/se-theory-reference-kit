@@ -109,4 +109,4 @@ jobs:
       # ============================================================
 
       - name: E1) Validate repository manifest against schema
-        run: uvx --from se-manifest-schema se-manifest validate-manifest --path SE_MANIFEST.toml --strict
+        run: uvx se-manifest-schema validate-manifest --path SE_MANIFEST.toml --strict
