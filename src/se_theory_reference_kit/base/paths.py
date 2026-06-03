@@ -69,22 +69,6 @@ def reference_dir(
     return resolve_repo_path(reference_dir_name, root=root)
 
 
-def reference_index_path(
-    *,
-    root: Path | None = None,
-    reference_dir_name: str = "reference",
-    reference_index_name: str = "index.toml",
-) -> Path:
-    """Return the repository reference index path."""
-    return (
-        reference_dir(
-            root=root,
-            reference_dir_name=reference_dir_name,
-        )
-        / reference_index_name
-    )
-
-
 def reference_artifact_path(
     path: str | Path,
     *,

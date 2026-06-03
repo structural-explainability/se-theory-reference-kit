@@ -5,9 +5,8 @@ from pathlib import Path
 from typing import Any
 
 from se_theory_reference_kit.commands._context import resolve_command_context
-from se_theory_reference_kit.declarations.index import reference_artifacts
 from se_theory_reference_kit.export.engine import export_registries
-from se_theory_reference_kit.reference.registry import build_reference_registry
+from se_theory_reference_kit.reference.registry import build_registry_from_config
 
 
 def configure_export_parser(subparsers: _SubParsersAction[Any]) -> None:
@@ -26,32 +25,28 @@ def configure_export_parser(subparsers: _SubParsersAction[Any]) -> None:
 
 def run_export_command(args: Namespace) -> int:
     """Run generated export or export freshness check."""
-    root = None if args.root is None else Path(args.root)
-    command_context = resolve_command_context(root=root, load_index=True)
+    raw_root = getattr(args, "root", None)
+    root = None if raw_root is None else Path(raw_root)
 
-    if command_context.reference_index is None:
-        msg = "reference index was not loaded"
-        raise RuntimeError(msg)
+    command_context = resolve_command_context(root=root)
 
-    artifact_declarations = reference_artifacts(command_context.reference_index)
-    registry = build_reference_registry(
-        artifact_declarations,
-        root=command_context.repo_root,
-        reference_dir_name=command_context.config.reference_dir_name,
+    registry = build_registry_from_config(
+        command_context.repo_root,
+        command_context.config,
     )
 
-    namespace = (
-        command_context.config.reference_namespace
-        or f"se.{command_context.config.artifact_slug.replace('-', '_')}"
+    namespace = _reference_namespace(command_context.config)
+
+    reference_root = (
+        command_context.repo_root / command_context.config.reference_dir_name
     )
+    output_root = command_context.repo_root / command_context.config.generated_data_dir
 
     results = export_registries(
         specs=command_context.export_specs,
         registry=registry,
-        reference_root=command_context.repo_root
-        / command_context.config.reference_dir_name,
-        output_root=command_context.repo_root
-        / command_context.config.generated_data_dir,
+        reference_root=reference_root,
+        output_root=output_root,
         repo_slug=command_context.config.repo_slug,
         reference_namespace=namespace,
         check=bool(args.check),
@@ -66,3 +61,16 @@ def run_export_command(args: Namespace) -> int:
 
     print("Reference exports are stale.")
     return 1
+
+
+def _reference_namespace(config: Any) -> str:
+    """Return configured reference namespace or derived default."""
+    namespace = getattr(config, "reference_namespace", None)
+    if isinstance(namespace, str) and namespace:
+        return namespace
+
+    artifact_slug = getattr(config, "artifact_slug", "theory")
+    if not isinstance(artifact_slug, str) or not artifact_slug:
+        artifact_slug = "theory"
+
+    return f"se.{artifact_slug.replace('-', '_')}"

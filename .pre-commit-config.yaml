@@ -120,7 +120,7 @@ repos:
       - id: se-validate-manifest
         name: E2) Validate SE manifest against schema
         language: system
-        entry: uvx --python 3.14 --from se-manifest-schema se-manifest validate-manifest --strict
+        entry: uvx se-manifest-schema validate-manifest --path SE_MANIFEST.toml --strict
         pass_filenames: false
         always_run: true
 

@@ -33,9 +33,6 @@ from se_theory_reference_kit.validation.checks.lean_surface import (
 from se_theory_reference_kit.validation.checks.reference_artifacts import (
     CHECK as REFERENCE_ARTIFACTS_CHECK,
 )
-from se_theory_reference_kit.validation.checks.reference_index import (
-    CHECK as REFERENCE_INDEX_CHECK,
-)
 from se_theory_reference_kit.validation.checks.strict import (
     CHECK as STRICT_CHECK,
 )
@@ -47,7 +44,6 @@ __all__ = ["DEFAULT_CHECKS", "default_registry"]
 # checks depend on the reference index. strict runs last because it is
 # strict-only and least likely to gate routine validation.
 DEFAULT_CHECKS: tuple[Check, ...] = (
-    REFERENCE_INDEX_CHECK,
     REFERENCE_ARTIFACTS_CHECK,
     LEAN_SURFACE_CHECK,
     EXPORT_CHECK,

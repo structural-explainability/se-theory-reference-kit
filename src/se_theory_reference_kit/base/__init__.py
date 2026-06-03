@@ -11,7 +11,6 @@ from se_theory_reference_kit.base.paths import (
     lean_module_to_path,
     reference_artifact_path,
     reference_dir,
-    reference_index_path,
     resolve_repo_path,
 )
 from se_theory_reference_kit.base.results import (
@@ -36,7 +35,6 @@ __all__ = [
     "lean_module_to_path",
     "reference_artifact_path",
     "reference_dir",
-    "reference_index_path",
     "resolve_repo_path",
     "CheckResult",
     "CheckSeverity",

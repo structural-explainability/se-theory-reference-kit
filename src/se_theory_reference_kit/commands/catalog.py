@@ -6,9 +6,8 @@ from typing import Any
 
 from se_theory_reference_kit.base.json_utils import encode_json, write_or_check_text
 from se_theory_reference_kit.commands._context import resolve_command_context
-from se_theory_reference_kit.declarations.index import reference_artifacts
 from se_theory_reference_kit.export.catalog import build_reference_catalog
-from se_theory_reference_kit.reference.registry import build_reference_registry
+from se_theory_reference_kit.reference.registry import build_registry_from_config
 
 
 def configure_catalog_parser(subparsers: _SubParsersAction[Any]) -> None:
@@ -28,46 +27,36 @@ def configure_catalog_parser(subparsers: _SubParsersAction[Any]) -> None:
 def run_catalog_command(args: Namespace) -> int:
     """Run generated catalog export or freshness check."""
     root = None if args.root is None else Path(args.root)
-    command_context = resolve_command_context(root=root, load_index=True)
+    command_context = resolve_command_context(root=root)
+    config = command_context.config
 
-    if command_context.reference_index is None:
-        msg = "reference index was not loaded"
+    if config.catalog_artifact_name is None:
+        msg = (
+            "theory-reference.toml must declare [export_map].catalog for catalog export"
+        )
+        raise RuntimeError(msg)
+    if config.catalog_schema is None:
+        msg = "theory-reference.toml must resolve a catalog schema for catalog export"
         raise RuntimeError(msg)
 
-    catalog_schema = command_context.config.catalog_schema
-    catalog_artifact_name = command_context.config.catalog_artifact_name
     namespace = (
-        command_context.config.reference_namespace
-        or f"se.{command_context.config.artifact_slug.replace('-', '_')}"
+        config.reference_namespace or f"se.{config.artifact_slug.replace('-', '_')}"
     )
 
-    if catalog_schema is None:
-        msg = "repo-owned config must declare CATALOG_SCHEMA for catalog export"
-        raise RuntimeError(msg)
-
-    if catalog_artifact_name is None:
-        msg = "repo-owned config must declare CATALOG_ARTIFACT_NAME for catalog export"
-        raise RuntimeError(msg)
-
-    artifact_declarations = reference_artifacts(command_context.reference_index)
-    registry = build_reference_registry(
-        artifact_declarations,
-        root=command_context.repo_root,
-        reference_dir_name=command_context.config.reference_dir_name,
-    )
+    registry = build_registry_from_config(command_context.repo_root, config)
 
     payload = build_reference_catalog(
         registry=registry,
-        schema=catalog_schema,
-        source=command_context.config.repo_slug,
+        schema=config.catalog_schema,
+        source=config.repo_slug,
         namespace=namespace,
-        artifact=catalog_artifact_name,
+        artifact=config.catalog_artifact_name,
     )
 
     output_path = (
         command_context.repo_root
-        / command_context.config.generated_data_dir
-        / f"{catalog_artifact_name}.json"
+        / config.generated_data_dir
+        / f"{config.catalog_artifact_name}.json"
     )
 
     current = write_or_check_text(
@@ -77,10 +66,11 @@ def run_catalog_command(args: Namespace) -> int:
     )
 
     if current:
-        if args.check:
-            print("Reference catalog is current.")
-        else:
-            print("Reference catalog completed.")
+        print(
+            "Reference catalog is current."
+            if args.check
+            else "Reference catalog completed."
+        )
         return 0
 
     print("Reference catalog is stale.")

@@ -4,6 +4,9 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, cast
 
+from se_theory_reference_kit.base.io import load_toml
+from se_theory_reference_kit.declarations.config import TheoryReferenceConfig
+from se_theory_reference_kit.declarations.surface import SurfaceSymbols
 from se_theory_reference_kit.reference.artifacts import (
     ArtifactDeclaration,
     LoadedReferenceArtifact,
@@ -12,6 +15,10 @@ from se_theory_reference_kit.reference.artifacts import (
 )
 
 type SectionEntries = dict[str, dict[str, Any]]
+
+SURFACE_KINDS: frozenset[str] = frozenset(
+    {"type", "predicate", "axiom", "theorem", "requirement", "vocabulary", "witness"}
+)
 
 
 @dataclass(frozen=True, slots=True)
@@ -55,6 +62,35 @@ def build_reference_registry(
     )
 
     return ReferenceRegistry(artifacts=loaded)
+
+
+def build_registry_from_config(
+    repo_root: Path, config: TheoryReferenceConfig
+) -> ReferenceRegistry:
+    """Build the full reference registry from the config artifact sources."""
+    declarations: list[ArtifactDeclaration] = [
+        {"id": kind, "path": Path(source).name}
+        for kind, source in config.surface_kind_sources.items()
+    ]
+    return build_reference_registry(
+        declarations,
+        root=repo_root,
+        reference_dir_name=config.reference_dir_name,
+    )
+
+
+def build_surface_symbols(
+    repo_root: Path, config: TheoryReferenceConfig
+) -> SurfaceSymbols:
+    """Derive the public surface from the mapped reference artifacts."""
+    reference_root = repo_root / config.reference_dir_name
+    by_kind: dict[str, frozenset[str]] = {}
+    for kind, source in config.surface_kind_sources.items():
+        if kind not in SURFACE_KINDS:
+            continue
+        artifact = load_toml(reference_root / Path(source).name)
+        by_kind[kind] = frozenset(_symbol_names(artifact, kind))
+    return SurfaceSymbols(by_kind=by_kind)
 
 
 def section_entries(
@@ -162,3 +198,24 @@ def extract_unique_source_modules(
         ):
             modules.append(source_module)
             seen.add(source_module)
+
+
+def _symbol_names(data: ReferenceDocument, kind: str) -> list[str]:
+    """Return public symbol names from a reference artifact section."""
+    entries = section_entries(data, kind)
+    names: list[str] = []
+
+    for entry_id, entry in entries.items():
+        raw_name = entry.get("name")
+        if isinstance(raw_name, str) and raw_name:
+            names.append(raw_name)
+            continue
+
+        raw_symbol = entry.get("lean_symbol")
+        if isinstance(raw_symbol, str) and raw_symbol:
+            names.append(raw_symbol)
+            continue
+
+        names.append(entry_id)
+
+    return names

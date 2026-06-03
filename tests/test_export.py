@@ -3,12 +3,12 @@
 from pathlib import Path
 
 from se_theory_reference_kit.declarations.export_spec import ExportSpec
-from se_theory_reference_kit.declarations.index import ArtifactDeclaration
 from se_theory_reference_kit.export.catalog import build_reference_catalog
 from se_theory_reference_kit.export.engine import (
     build_registry_payload,
     export_registries,
 )
+from se_theory_reference_kit.reference.artifacts import ArtifactDeclaration
 from se_theory_reference_kit.reference.registry import build_reference_registry
 
 

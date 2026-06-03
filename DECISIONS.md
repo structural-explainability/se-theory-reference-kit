@@ -16,13 +16,9 @@ This document records current load-bearing decisions, rationale, and consequence
 
 ### Decision
 
-`se-theory-reference-kit` owns reusable Python machinery for loading,
-scaffolding, validating, and exporting theory-reference artifacts that mirror
-Lean public surfaces.
-
-It does not own Lean theory semantics, theory-specific public symbol lists,
-theory-specific export artifact maps, contract packaging, or downstream
-operational validation.
+`se-theory-reference-kit` owns reusable Python machinery and model contracts
+for loading, scaffolding, validating, inspecting, cataloging, and exporting
+theory-reference artifacts that mirror Lean public surfaces.
 
 ### Rationale
 
@@ -38,10 +34,10 @@ changes.
 
 - The kit provides generic models, loaders, validators, scaffolders, exporters,
   and command plumbing.
-- Theory repositories provide `reference_tool/config.py`,
-  `reference_tool/lean_surface.py`, and `reference_tool/export_spec.py`.
-- The kit may load repo-provided declarations but must not hard-code symbols
-  from neutral substrate, transformation, identity regimes, persistence, or
+- Theory repositories provide a declarative `reference/theory-reference.toml`
+  and their reference artifacts.
+- The kit loads repo-provided declarations but must not hard-code symbols from
+  neutral substrate, transformation, identity regimes, persistence, or
   structural explainability.
 
 ---
@@ -54,24 +50,32 @@ changes.
 
 ### Decision
 
-Each theory repository owns its own public Lean surface declarations and export
-specifications.
+Each theory repository owns its own public Lean surface, reference layout, and
+export specifications.
 
-The shared kit consumes those declarations through stable Python interfaces.
+Lean source is the source of truth for formal declarations.
+`reference/*.toml` is the source of truth for repo-owned classification,
+traceability, and export intent.
+Generated JSON is an output, not an authority source.
+
+The shared kit consumes those declarations through stable, typed declaration
+models loaded from repository data.
 
 ### Rationale
 
 A public Lean surface is part of the theory repository's public contract.
-The export artifact map is also repo-specific because it names the artifacts that
-a particular theory repository chooses to publish.
+The export specifications are also repo-specific because they name the artifacts
+that a particular theory repository chooses to publish.
 
 Centralizing those declarations in the kit would make the kit a hidden authority
 over theory-repository public surfaces.
 
 ### Consequences
 
-- Public symbol lists do not live in `se-theory-reference-kit`.
-- Export artifact maps do not live in `se-theory-reference-kit`.
+- Public symbol sets and export specifications do not live in
+  `se-theory-reference-kit`.
+- They live in each theory repository, in its reference artifacts and its
+  `reference/theory-reference.toml`.
 - Adding or removing theory symbols is a change in the owning theory repository,
   not in the kit.
 
@@ -117,19 +121,44 @@ The package exposes one public command:
 se-theory-reference
 ```
 
-Subcommands provide validation, scaffolding, export, catalog, and inspection
-behavior.
+Repository-specific theory packages may delegate to this command, but they should
+not reimplement reference validation, scaffolding, export, catalog, or inspection
+logic.
+
+The shared command surface includes:
+
+```shell
+se-theory-reference validate
+se-theory-reference validate --strict
+
+se-theory-reference scaffold
+se-theory-reference scaffold --dry-run
+se-theory-reference scaffold --overwrite
+
+se-theory-reference export
+se-theory-reference export --check
+
+se-theory-reference catalog
+se-theory-reference catalog --check
+
+se-theory-reference inspect
+```
 
 ### Rationale
 
-A single namespaced command keeps the public executable surface tied to the
-package and avoids collisions with other Structural Explainability tools.
+A single namespaced command gives all theory repositories the same operational
+surface while keeping repo-specific declarations in data.
+
+Duplicating commands in each theory repository would recreate the local-tooling
+drift that the kit exists to eliminate.
 
 ### Consequences
 
-- `pyproject.toml` declares only `se-theory-reference`.
-- Broad names such as `se-validate` are not used by this package.
-- New behaviors are added as subcommands rather than new top-level executables.
+- Theory repositories may expose thin compatibility wrappers, but wrappers must
+  delegate to `se-theory-reference-kit`.
+- New reference operations are added to the kit command surface first.
+- Repository-specific Python command logic is avoided unless it addresses a
+  genuinely repo-specific concern outside the generic reference workflow.
 
 ---
 
@@ -180,8 +209,8 @@ groups.
 
 ### Rationale
 
-The generic engine can initially use the Python standard library for paths,
-TOML reading, JSON writing, command parsing, dataclasses, and import loading.
+The generic engine uses the Python standard library for paths, TOML reading,
+JSON writing, command parsing, and dataclasses.
 
 Keeping runtime dependencies empty prevents tooling dependencies from becoming
 implicit public contract dependencies.
@@ -189,6 +218,7 @@ implicit public contract dependencies.
 ### Consequences
 
 - `dependencies = []`.
+- Configuration and artifact reading use `tomllib` from the standard library.
 - Documentation dependencies live under `docs`.
 - Developer tooling dependencies live under `dev`.
 - Any future runtime dependency must be justified as part of the generic engine,
@@ -320,5 +350,79 @@ stable validation composition across theory repositories.
   and default-registry stability.
 
 ---
+
+## TRK-D-0011: Repository declarations are declarative data loaded by the kit
+
+### Date recorded
+
+2026-06-03
+
+### Decision
+
+Each theory repository declares its repository identity, Lean public surface
+mapping, reference layout, and export specifications in a single declarative
+file, `reference/theory-reference.toml`.
+
+The kit reads that file into typed declaration models and does not import
+repository-owned Python configuration modules.
+
+### Rationale
+
+Repository configuration is data, not behavior. Expressing it as data keeps the
+generic engine the only place that holds loading logic, makes each repository's
+declaration inspectable and diffable, and lets a new theory repository join by
+writing one configuration file rather than authoring code.
+
+A single declarative source also removes any executable surface from repository
+configuration, so configuration cannot carry behavior or import-time side
+effects.
+
+### Consequences
+
+- A conforming repository provides `reference/theory-reference.toml`; it does not
+  provide importable configuration modules.
+- The kit owns the declaration model shapes, such as `TheoryReferenceConfig` and
+  `ExportSpec`; the repository owns only the values.
+- The kit's configuration loader is the single place that knows the file's shape;
+  command and engine code consume typed models.
+- A new theory repository is onboarded by authoring one configuration file.
+
+---
+
+## TRK-D-0012: The declared public surface is derived from reference artifacts
+
+### Date recorded
+
+2026-06-03
+
+### Decision
+
+The kit derives a repository's declared public surface from its reference
+artifacts. Lean remains the source of truth for formal declarations; the
+reference artifacts are the source of truth for the repository's declared,
+classified, and exportable public surface.
+
+Public symbols are not listed a second time in configuration.
+
+### Rationale
+
+The reference artifacts already enumerate the public symbols and their citation
+identifiers, so they are the single source of truth for the symbol set.
+Declaring the same symbols again in configuration would create two sources that
+can disagree, and synchronization validation would then have to police the
+duplication it exists to prevent.
+
+Treating the artifacts as the source keeps the symbol set in one place and makes
+adding or removing a symbol a single edit in the owning artifact.
+
+### Consequences
+
+- Surface symbols live only in the reference artifacts; configuration carries the
+  kind-to-artifact mapping, not the symbols.
+- `SurfaceSymbols` is built by reading the mapped artifacts, not from a
+  configuration list.
+- A symbol change is a change to one reference artifact, checked against Lean.
+- Synchronization validation compares the Lean public surface against the
+  artifact-derived surface, with no third copy to reconcile.
 
 <!-- markdownlint-enable MD024 -->

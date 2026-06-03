@@ -1,10 +1,10 @@
 """validation/checks/strict.py - Strict-only unfinished-work marker check."""
 
 from collections.abc import Iterable
+from pathlib import Path
 
 from se_theory_reference_kit.base.io import read_text
-from se_theory_reference_kit.base.results import CheckResult, failure, ok, partial
-from se_theory_reference_kit.declarations.index import reference_artifacts
+from se_theory_reference_kit.base.results import CheckResult, failure, ok
 from se_theory_reference_kit.validation.context import ReferenceRunContext
 from se_theory_reference_kit.validation.registry import Check
 
@@ -13,6 +13,7 @@ __all__ = ["CHECK_ID", "TODO_MARKERS", "check_strict_no_todo", "CHECK"]
 CHECK_ID = "structural.strict.no-todo"
 
 TODO_MARKERS: tuple[str, ...] = ("TODO", "FIXME", "XXX")
+CHECKED_SUFFIXES: frozenset[str] = frozenset({".toml", ".json", ".md"})
 
 
 def _markers_in_text(text: str) -> list[str]:
@@ -38,20 +39,11 @@ def _markers_in_text(text: str) -> list[str]:
 
 def check_strict_no_todo(context: ReferenceRunContext) -> Iterable[CheckResult]:
     """Verify reference artifacts contain no unfinished-work markers."""
-    if context.reference_index is None:
-        return [partial(CHECK_ID, "reference index not loaded")]
-
     findings: list[CheckResult] = []
 
-    for declaration in reference_artifacts(context.reference_index):
-        artifact_id = str(declaration.get("id", "<unnamed>"))
-        rel_path = declaration.get("path")
-
-        if not isinstance(rel_path, str) or not rel_path:
-            continue
-
+    for artifact_id, rel_path in _configured_artifact_paths(context):
         path = context.reference_root / rel_path
-        if path.suffix.lower() not in {".toml", ".json", ".md"}:
+        if path.suffix.lower() not in CHECKED_SUFFIXES:
             continue
 
         if not path.is_file():
@@ -75,6 +67,18 @@ def check_strict_no_todo(context: ReferenceRunContext) -> Iterable[CheckResult]:
         )
 
     return findings
+
+
+def _configured_artifact_paths(
+    context: ReferenceRunContext,
+) -> list[tuple[str, str]]:
+    """Return configured reference artifact paths keyed by surface kind."""
+    paths: list[tuple[str, str]] = []
+
+    for kind, source in context.config.surface_kind_sources.items():
+        paths.append((kind, Path(source).name))
+
+    return paths
 
 
 CHECK = Check(

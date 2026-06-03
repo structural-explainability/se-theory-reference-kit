@@ -21,7 +21,7 @@ def configure_scaffold_parser(subparsers: _SubParsersAction[Any]) -> None:
 def run_scaffold_command(args: Namespace) -> int:
     """Run reference scaffolding."""
     root = None if args.root is None else Path(args.root)
-    command_context = resolve_command_context(root=root, load_index=True)
+    command_context = resolve_command_context(root=root)
 
     print(f"repo_root: {command_context.repo_root.as_posix()}")
     print("Reference scaffolding command is wired.")

@@ -10,7 +10,6 @@ from se_theory_reference_kit.base.paths import (
     lean_module_to_path,
     reference_artifact_path,
     reference_dir,
-    reference_index_path,
     resolve_repo_path,
 )
 
@@ -45,7 +44,6 @@ def test_reference_paths_are_repository_relative(tmp_path: Path) -> None:
     root = make_repo(tmp_path)
 
     assert reference_dir(root=root) == root / "reference"
-    assert reference_index_path(root=root) == root / "reference" / "index.toml"
 
 
 def test_reference_artifact_path_requires_reference_directory(tmp_path: Path) -> None:

@@ -13,6 +13,65 @@ and this project adheres to **[Semantic Versioning](https://semver.org/spec/v2.0
 
 ---
 
+## [0.2.0] - 2026-06-03
+
+### Added
+
+- Added data-driven theory-reference configuration through
+  `reference/theory-reference.toml`.
+- Added typed declaration loading for repository identity, Lean public surface
+  mapping, reference artifact layout, export targets, and validation commands.
+- Added config-driven reference registry construction from mapped reference
+  artifacts.
+- Added artifact-derived public surface construction so public symbols are read
+  from reference artifacts rather than duplicated in Python constants.
+- Added stable shared command surface for:
+
+  - `se-theory-reference validate`
+  - `se-theory-reference validate --strict`
+  - `se-theory-reference scaffold`
+  - `se-theory-reference scaffold --dry-run`
+  - `se-theory-reference scaffold --overwrite`
+  - `se-theory-reference export`
+  - `se-theory-reference export --check`
+  - `se-theory-reference catalog`
+  - `se-theory-reference catalog --check`
+  - `se-theory-reference inspect`
+
+### Changed
+
+- Reworked validation commands to use the shared `RunReport` returned by the
+  validation runner.
+- Reworked export, inspect, validation, and reference-artifact checks to use the
+  config-driven model instead of `reference/index.toml`.
+- Replaced index-based reference discovery with `surface_kinds` and `export_map`
+  declarations from `reference/theory-reference.toml`.
+- Clarified that Lean source remains authoritative for formal declarations,
+  while reference artifacts are authoritative for repo-owned classification,
+  traceability, and export intent.
+- Simplified theory repository integration so client theory repos can run
+  `uv run se-theory-reference ...` directly without repo-local Python wrappers.
+
+### Removed
+
+- Removed dependence on the old `reference/index.toml` model.
+- Removed stale imports and command paths that referenced
+  `se_theory_reference_kit.declarations.index`.
+- Removed hard-coded repo-specific public symbol sets from the shared kit design.
+- Removed old `load_index` command-context behavior.
+
+### Fixed
+
+- Fixed Pyright and Ruff issues caused by stale index-based architecture.
+- Fixed command help import failures caused by removed declaration modules.
+- Fixed validation result handling so command exit status is delegated to the
+  validation runner.
+- Fixed type narrowing in TOML configuration and export-spec loading.
+- Fixed reference, strict, Lean-surface, export, and inspect checks to consume
+  typed config and registry boundaries.
+
+---
+
 ## [0.1.0] - 2026-06-01
 
 ### Added
@@ -37,9 +96,9 @@ and this project adheres to **[Semantic Versioning](https://semver.org/spec/v2.0
 ## Notes on versioning and releases
 
 - We use **SemVer**:
-  - **MAJOR** - breaking changes
-  - **MINOR** - backward-compatible changes
-  - **PATCH** - fixes, documentation, tooling
+  - **MAJOR*- - breaking changes
+  - **MINOR*- - backward-compatible changes
+  - **PATCH*- - fixes, documentation, tooling
 - Versions are driven by git tags. Tag `vX.Y.Z` to release.
 - Docs are deployed per version tag and aliased to **latest**.
 
@@ -65,7 +124,7 @@ uv run se-theory-reference export --help
 uv run se-theory-reference catalog --help
 uv run se-theory-reference inspect --help
 
-uvx --from se-manifest-schema se-manifest validate-manifest --path SE_MANIFEST.toml --strict
+uvx se-manifest-schema validate-manifest --path SE_MANIFEST.toml --strict
 
 git add -A
 uvx pre-commit run --all-files
@@ -77,7 +136,7 @@ uv run python -m pytest
 uv run python -m zensical build
 
 # check import layers
-uvx --python 3.13 --from import-linter lint-imports --config .github/.importlinter
+uv run python -c "import os, subprocess, sys; os.environ['PYTHONPATH']='src'; raise SystemExit(subprocess.call(['uvx','--python','3.13','--from','import-linter','lint-imports','--config','.github/.importlinter']))"
 
 # check complexity; no output is good (all A or B)
 uvx radon cc src/se_theory_reference_kit -s -a -n C
@@ -90,7 +149,7 @@ uvx twine check dist/*
 
 ```shell
 git add -A
-git commit -m "Prep X.Y.Z"
+git commit -m "Prepare X.Y.Z"
 git push -u origin main
 ```
 
@@ -119,7 +178,8 @@ git push origin :refs/tags/vX.Z.Y
 
 ## Links
 
-[Unreleased]: https://github.com/structural-explainability/se-theory-reference-kit/compare/v0.1.0...HEAD
+[Unreleased]: https://github.com/structural-explainability/se-theory-reference-kit/compare/v0.2.0...HEAD
+[0.2.0]: https://github.com/structural-explainability/se-theory-reference-kit/releases/tag/v0.2.0
 [0.1.0]: https://github.com/structural-explainability/se-theory-reference-kit/releases/tag/v0.1.0
 
 <!-- markdownlint-enable MD024 -->

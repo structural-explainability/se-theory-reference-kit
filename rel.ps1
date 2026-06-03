@@ -113,8 +113,15 @@ Invoke-Step "E1) Build documentation" "uv run python -m zensical build" {
 # F) Architectural and code-health checks
 # ============================================================
 
-Invoke-Step "F0) check import layers" "uvx --python 3.13 --from import-linter lint-imports --config .github/.importlinter" {
-    uvx --python 3.13 --from import-linter lint-imports --config .github/.importlinter
+Invoke-Step "F0) check import layers" "`$env:PYTHONPATH = 'src'; uvx --python 3.13 --from import-linter lint-imports --config .github/.importlinter" {
+    $oldPythonPath = $env:PYTHONPATH
+    try {
+        $env:PYTHONPATH = "src"
+        uvx --python 3.13 --from import-linter lint-imports --config .github/.importlinter
+    }
+    finally {
+        $env:PYTHONPATH = $oldPythonPath
+    }
 }
 Invoke-Step "F1) Find dead code" "uvx --with-editable . vulture src/se_theory_reference_kit" {
     uvx --with-editable . vulture src/se_theory_reference_kit

@@ -1,4 +1,4 @@
-"""commands/validate.py - Repository validation command."""
+"""commands/validate.py - Validation command."""
 
 from argparse import Namespace, _SubParsersAction
 from pathlib import Path
@@ -14,37 +14,38 @@ def configure_validate_parser(subparsers: _SubParsersAction[Any]) -> None:
     """Configure the validate subcommand."""
     parser = subparsers.add_parser(
         "validate",
-        help="Validate theory-reference artifacts.",
+        help="Validate reference artifacts against declared Lean public surface.",
     )
-    parser.add_argument("--strict", action="store_true")
+    parser.add_argument(
+        "--strict",
+        action="store_true",
+        help="Run strict validation checks.",
+    )
     parser.set_defaults(handler=run_validate_command)
 
 
 def run_validate_command(args: Namespace) -> int:
-    """Run theory-reference validation."""
-    root = None if args.root is None else Path(args.root)
-    command_context = resolve_command_context(root=root, load_index=True)
+    """Run validation checks."""
+    raw_root = getattr(args, "root", None)
+    root = None if raw_root is None else Path(raw_root)
 
-    validation_context = ReferenceRunContext(
+    command_context = resolve_command_context(root=root)
+
+    context = ReferenceRunContext(
         repo_root=command_context.repo_root,
         config=command_context.config,
         surface=command_context.surface,
         export_specs=command_context.export_specs,
-        reference_index=command_context.reference_index,
     )
 
+    registry = default_registry()
     report = run_checks(
-        registry=default_registry(),
-        context=validation_context,
+        registry=registry,
+        context=context,
         strict=bool(args.strict),
     )
 
     for result in report.results:
-        artifact = f" [{result.artifact_id}]" if result.artifact_id else ""
-        path = f" {result.path.as_posix()}" if result.path else ""
-        print(
-            f"{result.status.value.upper()} "
-            f"{result.check_id}{artifact}{path}: {result.message}"
-        )
+        print(f"[{result.check_id}] {result.status.value}  {result.message}")
 
     return report.exit_code

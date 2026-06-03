@@ -100,6 +100,10 @@ git push -u origin main
 
 </details>
 
+## Authority Manifest
+
+[.accountability/surfaces.toml](./.accountability/surfaces.toml)
+
 ## Citation
 
 [CITATION.cff](./CITATION.cff)
@@ -108,6 +112,6 @@ git push -u origin main
 
 [MIT](./LICENSE)
 
-## Manifest
+## Repository Manifest
 
 [SE_MANIFEST.toml](./SE_MANIFEST.toml)

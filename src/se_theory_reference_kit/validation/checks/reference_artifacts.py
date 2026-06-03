@@ -1,9 +1,10 @@
 """validation/checks/reference_artifacts.py - Validate declared reference artifacts."""
 
 from collections.abc import Iterable
+from pathlib import Path
 
 from se_theory_reference_kit.base.results import CheckResult, failure, ok, partial
-from se_theory_reference_kit.declarations.index import reference_artifacts
+from se_theory_reference_kit.reference.artifacts import ArtifactDeclaration
 from se_theory_reference_kit.reference.registry import build_reference_registry
 from se_theory_reference_kit.reference.validation import (
     validate_reference_artifact_shape,
@@ -18,20 +19,19 @@ CHECK_ID = "reference.artifacts"
 
 def check_reference_artifacts(context: ReferenceRunContext) -> Iterable[CheckResult]:
     """Verify declared reference artifacts exist, parse, and have generic shape."""
-    if context.reference_index is None:
-        return [partial(CHECK_ID, "reference index not loaded")]
-
-    declarations = reference_artifacts(context.reference_index)
+    declarations = _artifact_declarations_from_context(context)
     if not declarations:
         return [partial(CHECK_ID, "no reference artifacts declared")]
 
     findings: list[CheckResult] = []
 
     for declaration in declarations:
-        rel_path = declaration.get("path")
-        artifact_id = str(declaration.get("id", "<unnamed>"))
+        raw_rel_path = declaration.get("path")
+        raw_artifact_id = declaration.get("id")
 
-        if not isinstance(rel_path, str) or not rel_path:
+        artifact_id = raw_artifact_id if isinstance(raw_artifact_id, str) else None
+
+        if not isinstance(raw_rel_path, str) or not raw_rel_path:
             findings.append(
                 failure(
                     CHECK_ID,
@@ -41,6 +41,7 @@ def check_reference_artifacts(context: ReferenceRunContext) -> Iterable[CheckRes
             )
             continue
 
+        rel_path = raw_rel_path
         path = context.reference_root / rel_path
         if not path.is_file():
             findings.append(
@@ -73,6 +74,23 @@ def check_reference_artifacts(context: ReferenceRunContext) -> Iterable[CheckRes
         findings.append(ok(CHECK_ID, "all declared reference artifacts load"))
 
     return findings
+
+
+def _artifact_declarations_from_context(
+    context: ReferenceRunContext,
+) -> list[ArtifactDeclaration]:
+    """Build artifact declarations from configured surface-kind sources."""
+    declarations: list[ArtifactDeclaration] = []
+
+    for kind, source in context.config.surface_kind_sources.items():
+        declarations.append(
+            {
+                "id": kind,
+                "path": Path(source).name,
+            }
+        )
+
+    return declarations
 
 
 CHECK = Check(

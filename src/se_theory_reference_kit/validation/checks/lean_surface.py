@@ -3,10 +3,9 @@
 from collections.abc import Iterable
 
 from se_theory_reference_kit.base.results import CheckResult, failure, ok, partial
-from se_theory_reference_kit.declarations.index import reference_artifacts
 from se_theory_reference_kit.lean.surface import missing_expected_surface_symbols
 from se_theory_reference_kit.reference.registry import (
-    build_reference_registry,
+    build_registry_from_config,
     registered_lean_symbols,
 )
 from se_theory_reference_kit.validation.context import ReferenceRunContext
@@ -19,20 +18,11 @@ CHECK_ID = "lean.surface"
 
 def check_lean_surface(context: ReferenceRunContext) -> Iterable[CheckResult]:
     """Verify expected public Lean symbols appear in reference artifacts."""
-    if context.reference_index is None:
-        return [partial(CHECK_ID, "reference index not loaded")]
-
     expected = context.surface.all_symbols
     if not expected:
         return [partial(CHECK_ID, "no public surface symbols declared")]
 
-    declarations = reference_artifacts(context.reference_index)
-    registry = build_reference_registry(
-        declarations,
-        root=context.repo_root,
-        reference_dir_name=context.config.reference_dir_name,
-    )
-
+    registry = build_registry_from_config(context.repo_root, context.config)
     registered = registered_lean_symbols(registry)
     missing = missing_expected_surface_symbols(
         surface=context.surface,

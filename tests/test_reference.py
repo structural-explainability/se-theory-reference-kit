@@ -4,11 +4,6 @@ from pathlib import Path
 
 import pytest
 
-from se_theory_reference_kit.declarations.index import (
-    load_reference_index,
-    reference_artifacts,
-    surface_module,
-)
 from se_theory_reference_kit.reference.artifacts import (
     load_reference_artifact,
     ordered_table_values,
@@ -29,33 +24,6 @@ def make_repo(tmp_path: Path) -> Path:
     reference.mkdir(parents=True)
     (root / "pyproject.toml").write_text("[project]\nname = 'x'\n", encoding="utf-8")
     return root
-
-
-def test_reference_index_loading_and_artifact_declarations(tmp_path: Path) -> None:
-    """Reference index helpers load surface module and artifacts."""
-    root = make_repo(tmp_path)
-    index_path = root / "reference" / "index.toml"
-    index_path.write_text(
-        'surface_module = "SE.Example.Surface"\n'
-        "\n"
-        "[[artifact]]\n"
-        'id = "types"\n'
-        'kind = "type"\n'
-        'path = "reference/types.toml"\n',
-        encoding="utf-8",
-    )
-
-    index = load_reference_index(root=root)
-    artifacts = reference_artifacts(index)
-
-    assert surface_module(index) == "SE.Example.Surface"
-    assert artifacts == [
-        {
-            "id": "types",
-            "kind": "type",
-            "path": "reference/types.toml",
-        }
-    ]
 
 
 def test_load_reference_artifact_and_registry(tmp_path: Path) -> None:
