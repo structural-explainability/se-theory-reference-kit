@@ -6,7 +6,6 @@
 [![Python 3.15](https://img.shields.io/badge/python-3.15%2B-blue?logo=python)](./pyproject.toml)
 [![License](https://img.shields.io/badge/license-MIT-yellow.svg)](./LICENSE)
 
-[![CI-Lean](https://github.com/structural-explainability/se-theory-reference-kit/actions/workflows/ci-lean.yml/badge.svg?branch=main)](https://github.com/structural-explainability/se-theory-reference-kit/actions/workflows/ci-lean.yml)
 [![CI](https://github.com/structural-explainability/se-theory-reference-kit/actions/workflows/ci-python-zensical.yml/badge.svg?branch=main)](https://github.com/structural-explainability/se-theory-reference-kit/actions/workflows/ci-python-zensical.yml)
 [![Docs-Deploy](https://github.com/structural-explainability/se-theory-reference-kit/actions/workflows/deploy-zensical.yml/badge.svg?branch=main)](https://github.com/structural-explainability/se-theory-reference-kit/actions/workflows/deploy-zensical.yml)
 [![Pre-Release](https://github.com/structural-explainability/se-theory-reference-kit/actions/workflows/pre-release.yml/badge.svg?branch=main)](https://github.com/structural-explainability/se-theory-reference-kit/actions/workflows/pre-release.yml)
