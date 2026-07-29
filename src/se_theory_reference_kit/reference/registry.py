@@ -69,7 +69,11 @@ def build_registry_from_config(
 ) -> ReferenceRegistry:
     """Build the full reference registry from the config artifact sources."""
     declarations: list[ArtifactDeclaration] = [
-        {"id": kind, "path": Path(source).name}
+        {
+            "id": kind,
+            "kind": kind,
+            "path": Path(source).name,
+        }
         for kind, source in config.surface_kind_sources.items()
     ]
     return build_reference_registry(
@@ -201,19 +205,19 @@ def extract_unique_source_modules(
 
 
 def _symbol_names(data: ReferenceDocument, kind: str) -> list[str]:
-    """Return public symbol names from a reference artifact section."""
+    """Return public Lean symbol names from a reference artifact section."""
     entries = section_entries(data, kind)
     names: list[str] = []
 
     for entry_id, entry in entries.items():
-        raw_name = entry.get("name")
-        if isinstance(raw_name, str) and raw_name:
-            names.append(raw_name)
-            continue
-
         raw_symbol = entry.get("lean_symbol")
         if isinstance(raw_symbol, str) and raw_symbol:
             names.append(raw_symbol)
+            continue
+
+        raw_name = entry.get("name")
+        if isinstance(raw_name, str) and raw_name:
+            names.append(raw_name)
             continue
 
         names.append(entry_id)

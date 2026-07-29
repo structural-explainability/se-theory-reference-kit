@@ -121,9 +121,9 @@ jobs:
       contents: read  # WHY: Checkout source to build docs.
       pages: write    # WHY: Deploy to GitHub Pages.
       id-token: write # WHY: deploy-pages OIDC.
-    environment:
-      name: github-pages
-      url: ${{ steps.deploy.outputs.page_url }}
+    # environment:
+    #   name: github-pages
+    #   url: ${{ steps.deploy.outputs.page_url }}
     concurrency:
       group: github-pages
       cancel-in-progress: false

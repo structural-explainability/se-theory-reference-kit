@@ -60,9 +60,11 @@ View / Command Palette / `Developer: Reload Window` to refresh.
 ```shell
 uv self update
 uv python pin 3.15
+uv lock --upgrade
 uv sync --extra dev --extra docs --upgrade
 
 uvx pre-commit install
+uvx pre-commit autoupdate
 
 uv run se-theory-reference --help
 uv run se-theory-reference validate --help
@@ -72,7 +74,7 @@ uv run se-theory-reference catalog --help
 uv run se-theory-reference inspect --help
 
 # validate manifest file
-uvx se-manifest-schema validate-manifest --path SE_MANIFEST.toml --strict
+uvx se-manifest-schema validate-manifest --strict
 
 git add -A
 uvx pre-commit run --all-files

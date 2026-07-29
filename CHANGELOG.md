@@ -13,6 +13,42 @@ and this project adheres to **[Semantic Versioning](https://semver.org/spec/v2.0
 
 ---
 
+## [0.3.0] - 2026-07-29
+
+### Added
+
+- Added Python 3.15 project, typing, testing, and release support.
+- Added fail-fast PowerShell release validation through `rel.ps1`.
+- Added validation coverage for configuration-derived reference artifact kinds
+  and registered Lean symbol names.
+
+### Changed
+
+- Made `rel.ps1` the authoritative local release-validation procedure.
+- Updated the release workflow, documentation, package metadata, and lock file
+  for the `0.3.0` release.
+- Updated reference artifact loading to treat mapped artifact paths consistently
+  relative to the configured `reference/` directory.
+- Updated Lean public-surface validation to compare registered `lean_symbol`
+  values rather than human-readable display names.
+
+### Fixed
+
+- Fixed reference artifact path resolution when configuration-derived
+  declarations provide paths relative to the configured reference directory.
+- Fixed configuration-derived artifact declarations so the `surface_kinds`
+  mapping key is preserved as the loaded artifact `kind`.
+- Fixed cascading `reference.artifacts` failures caused by loaded artifacts
+  receiving an empty kind.
+- Fixed cascading `lean.surface` failures caused by display names such as
+  `Neutrality by design` being compared with actual Lean declaration names.
+- Fixed reference validation for repositories whose public Lean root is a
+  top-level module such as `SE`.
+- Fixed native-command error handling in the PowerShell release procedure so
+  validation stops immediately when a command exits unsuccessfully.
+
+---
+
 ## [0.2.0] - 2026-06-03
 
 ### Added
@@ -26,7 +62,6 @@ and this project adheres to **[Semantic Versioning](https://semver.org/spec/v2.0
 - Added artifact-derived public surface construction so public symbols are read
   from reference artifacts rather than duplicated in Python constants.
 - Added stable shared command surface for:
-
   - `se-theory-reference validate`
   - `se-theory-reference validate --strict`
   - `se-theory-reference scaffold`
@@ -96,9 +131,9 @@ and this project adheres to **[Semantic Versioning](https://semver.org/spec/v2.0
 ## Notes on versioning and releases
 
 - We use **SemVer**:
-  - **MAJOR*- - breaking changes
-  - **MINOR*- - backward-compatible changes
-  - **PATCH*- - fixes, documentation, tooling
+  - \*_MAJOR_- - breaking changes
+  - \*_MINOR_- - backward-compatible changes
+  - \*_PATCH_- - fixes, documentation, tooling
 - Versions are driven by git tags. Tag `vX.Y.Z` to release.
 - Docs are deployed per version tag and aliased to **latest**.
 
@@ -114,36 +149,17 @@ Follow these steps exactly when creating a new release.
 
 ### Task 2. Validate
 
-```shell
-uv sync --extra dev --extra docs --upgrade
+From PowerShell at the repository root:
 
-uv run se-theory-reference --help
-uv run se-theory-reference validate --help
-uv run se-theory-reference scaffold --help
-uv run se-theory-reference export --help
-uv run se-theory-reference catalog --help
-uv run se-theory-reference inspect --help
-
-uvx se-manifest-schema validate-manifest --path SE_MANIFEST.toml --strict
-
-git add -A
-uvx pre-commit run --all-files
-# repeat if changes were made
-uvx pre-commit run --all-files
-
-uv run python -m pyright
-uv run python -m pytest
-uv run python -m zensical build
-
-# check import layers
-uv run python -c "import os, subprocess, sys; os.environ['PYTHONPATH']='src'; raise SystemExit(subprocess.call(['uvx','--python','3.13','--from','import-linter','lint-imports','--config','.github/.importlinter']))"
-
-# check complexity; no output is good (all A or B)
-uvx radon cc src/se_theory_reference_kit -s -a -n C
-
-uv build
-uvx twine check dist/*
+```pwsh
+.\rel.ps1
 ```
+
+The script refreshes the development environment and performs the required
+command-surface, manifest, pre-commit, test, type-checking, documentation,
+architecture, code-health, build, and distribution-metadata checks.
+
+Proceed when the script completes successfully.
 
 ### Task 3. Commit, push, and tag
 
@@ -163,7 +179,7 @@ git push origin vX.Y.Z
 ### Task 4. After tagging, verify tag consistency
 
 ```shell
-uvx --from se-manifest-schema se-manifest check-version --require-tag
+uvx se-manifest-schema check-version --require-tag
 ```
 
 Confirms CITATION.cff version matches the pushed git tag.
@@ -178,7 +194,8 @@ git push origin :refs/tags/vX.Z.Y
 
 ## Links
 
-[Unreleased]: https://github.com/structural-explainability/se-theory-reference-kit/compare/v0.2.0...HEAD
+[Unreleased]: https://github.com/structural-explainability/se-theory-reference-kit/compare/v0.3.0...HEAD
+[0.3.0]: https://github.com/structural-explainability/se-theory-reference-kit/releases/tag/v0.3.0
 [0.2.0]: https://github.com/structural-explainability/se-theory-reference-kit/releases/tag/v0.2.0
 [0.1.0]: https://github.com/structural-explainability/se-theory-reference-kit/releases/tag/v0.1.0
 
