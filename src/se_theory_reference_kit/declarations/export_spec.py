@@ -34,6 +34,7 @@ class ExportSpec:
             return ()
 
         specs: list[Self] = []
+
         for kind, source in surface_kinds.items():
             output = export_map.get(kind)
             if output is None:
@@ -61,6 +62,7 @@ def _section(data: Mapping[str, object], name: str) -> dict[str, object]:
     section = cast(Mapping[object, object], value)
 
     result: dict[str, object] = {}
+
     for key, item in section.items():
         if isinstance(key, str):
             result[key] = item
@@ -76,6 +78,7 @@ def _string_mapping(
     section = _section(data, section_name)
 
     result: dict[str, str] = {}
+
     for raw_key, raw_value in section.items():
         if isinstance(raw_value, str):
             result[raw_key] = raw_value

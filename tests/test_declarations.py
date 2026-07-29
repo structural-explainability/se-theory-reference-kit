@@ -47,3 +47,23 @@ def test_export_spec_stores_repo_owned_export_shape() -> None:
 
     assert spec.source_name == "types.toml"
     assert spec.payload_key == "types"
+
+
+def test_export_specs_use_names_relative_to_export_roots() -> None:
+    data: dict[str, object] = {
+        "repository": {
+            "theory": "neutral-substrate",
+        },
+        "surface_kinds": {
+            "type": "reference/substrate-types.toml",
+        },
+        "export_map": {
+            "type": "data/neutral-substrate/substrate-types.json",
+        },
+    }
+
+    specs = ExportSpec.specs_from_toml(data)
+
+    assert len(specs) == 1
+    assert specs[0].source_name == "substrate-types.toml"
+    assert specs[0].output_name == "substrate-types.json"

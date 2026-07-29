@@ -4,6 +4,8 @@ from pathlib import Path
 
 import pytest
 
+from se_theory_reference_kit.declarations.config import TheoryReferenceConfig
+from se_theory_reference_kit.declarations.surface import SurfaceSymbols
 from se_theory_reference_kit.reference.artifacts import (
     load_reference_artifact,
     ordered_table_values,
@@ -11,10 +13,15 @@ from se_theory_reference_kit.reference.artifacts import (
 )
 from se_theory_reference_kit.reference.registry import (
     build_reference_registry,
+    build_surface_symbols,
     registered_lean_symbols,
     section_entries,
     source_modules_in_registry,
 )
+from se_theory_reference_kit.validation.checks.reference_artifacts import (
+    _artifact_declarations_from_context,
+)
+from se_theory_reference_kit.validation.context import ReferenceRunContext
 
 
 def make_repo(tmp_path: Path) -> Path:
@@ -100,4 +107,74 @@ def test_section_entries_and_source_modules() -> None:
     assert source_modules_in_registry(document) == [
         "SE.Example.Surface",
         "SE.Example.Core",
+    ]
+
+
+def test_build_surface_symbols_reads_repository_relative_source(
+    tmp_path: Path,
+) -> None:
+    (tmp_path / "pyproject.toml").write_text(
+        '[project]\nname = "se-theory-neutral-substrate"\nversion = "0.0.0"\n',
+        encoding="utf-8",
+    )
+
+    reference_root = tmp_path / "reference"
+    reference_root.mkdir()
+
+    (reference_root / "substrate-predicates.toml").write_text(
+        """
+[predicate.NeutralByDesign]
+name = "Neutrality by design"
+lean_symbol = "SE.NeutralSubstrate.Neutrality.NeutralByDesign"
+""".strip()
+        + "\n",
+        encoding="utf-8",
+    )
+
+    config = TheoryReferenceConfig(
+        repo_slug="se-theory-neutral-substrate",
+        artifact_slug="neutral-substrate",
+        lean_public_root="SE",
+        surface_kind_sources={
+            "predicate": "reference/substrate-predicates.toml",
+        },
+    )
+
+    surface = build_surface_symbols(tmp_path, config)
+
+    assert surface.by_kind["predicate"] == frozenset(
+        {
+            "SE.NeutralSubstrate.Neutrality.NeutralByDesign",
+        }
+    )
+
+
+def test_reference_artifact_declarations_preserve_kind_and_path(
+    tmp_path: Path,
+) -> None:
+    root = make_repo(tmp_path)
+
+    config = TheoryReferenceConfig(
+        repo_slug="se-theory-neutral-substrate",
+        artifact_slug="neutral-substrate",
+        lean_public_root="SE",
+        surface_kind_sources={
+            "axiom": "reference/substrate-axioms.toml",
+        },
+    )
+
+    context = ReferenceRunContext(
+        repo_root=root,
+        config=config,
+        surface=SurfaceSymbols(),
+    )
+
+    declarations = _artifact_declarations_from_context(context)
+
+    assert declarations == [
+        {
+            "id": "axiom",
+            "kind": "axiom",
+            "path": "reference/substrate-axioms.toml",
+        }
     ]

@@ -15,6 +15,9 @@ from se_theory_reference_kit.base import (
 from se_theory_reference_kit.base.errors import ReferenceKitError
 from se_theory_reference_kit.declarations.config import TheoryReferenceConfig
 from se_theory_reference_kit.declarations.surface import SurfaceSymbols
+from se_theory_reference_kit.validation.checks.strict import (
+    _configured_artifact_paths,
+)
 from se_theory_reference_kit.validation.context import ReferenceRunContext
 from se_theory_reference_kit.validation.registry import Check, CheckRegistry
 from se_theory_reference_kit.validation.runner import run_checks
@@ -174,3 +177,34 @@ def test_failure_helper_uses_typed_detail() -> None:
     )
 
     assert result.detail == {"field": "value"}
+
+
+def test_strict_artifact_paths_preserve_repository_relative_source(
+    tmp_path: Path,
+) -> None:
+    root = tmp_path / "repo"
+    root.mkdir()
+
+    config = TheoryReferenceConfig(
+        repo_slug="se-theory-neutral-substrate",
+        artifact_slug="neutral-substrate",
+        lean_public_root="SE",
+        surface_kind_sources={
+            "requirement": "reference/substrate-requirements.toml",
+        },
+    )
+
+    context = ReferenceRunContext(
+        repo_root=root,
+        config=config,
+        surface=SurfaceSymbols(),
+    )
+
+    paths = _configured_artifact_paths(context)
+
+    assert paths == [
+        (
+            "requirement",
+            "reference/substrate-requirements.toml",
+        )
+    ]

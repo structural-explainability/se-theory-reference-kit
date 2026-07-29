@@ -1,8 +1,8 @@
 """validation/checks/reference_artifacts.py - Validate declared reference artifacts."""
 
 from collections.abc import Iterable
-from pathlib import Path
 
+from se_theory_reference_kit.base.paths import reference_artifact_path
 from se_theory_reference_kit.base.results import CheckResult, failure, ok, partial
 from se_theory_reference_kit.reference.artifacts import ArtifactDeclaration
 from se_theory_reference_kit.reference.registry import build_reference_registry
@@ -41,8 +41,11 @@ def check_reference_artifacts(context: ReferenceRunContext) -> Iterable[CheckRes
             )
             continue
 
-        rel_path = raw_rel_path
-        path = context.reference_root / rel_path
+        path = reference_artifact_path(
+            raw_rel_path,
+            root=context.repo_root,
+            reference_dir_name=context.config.reference_dir_name,
+        )
         if not path.is_file():
             findings.append(
                 failure(
@@ -86,7 +89,8 @@ def _artifact_declarations_from_context(
         declarations.append(
             {
                 "id": kind,
-                "path": Path(source).name,
+                "kind": kind,
+                "path": source,
             }
         )
 

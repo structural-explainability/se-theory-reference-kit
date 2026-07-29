@@ -5,6 +5,7 @@ from pathlib import Path
 from typing import Any, cast
 
 from se_theory_reference_kit.base.io import load_toml
+from se_theory_reference_kit.base.paths import reference_artifact_path
 from se_theory_reference_kit.declarations.config import TheoryReferenceConfig
 from se_theory_reference_kit.declarations.surface import SurfaceSymbols
 from se_theory_reference_kit.reference.artifacts import (
@@ -72,10 +73,11 @@ def build_registry_from_config(
         {
             "id": kind,
             "kind": kind,
-            "path": Path(source).name,
+            "path": source,
         }
         for kind, source in config.surface_kind_sources.items()
     ]
+
     return build_reference_registry(
         declarations,
         root=repo_root,
@@ -87,13 +89,20 @@ def build_surface_symbols(
     repo_root: Path, config: TheoryReferenceConfig
 ) -> SurfaceSymbols:
     """Derive the public surface from the mapped reference artifacts."""
-    reference_root = repo_root / config.reference_dir_name
     by_kind: dict[str, frozenset[str]] = {}
+
     for kind, source in config.surface_kind_sources.items():
         if kind not in SURFACE_KINDS:
             continue
-        artifact = load_toml(reference_root / Path(source).name)
+
+        artifact_path = reference_artifact_path(
+            source,
+            root=repo_root,
+            reference_dir_name=config.reference_dir_name,
+        )
+        artifact = load_toml(artifact_path)
         by_kind[kind] = frozenset(_symbol_names(artifact, kind))
+
     return SurfaceSymbols(by_kind=by_kind)
 
 

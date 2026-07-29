@@ -13,6 +13,26 @@ and this project adheres to **[Semantic Versioning](https://semver.org/spec/v2.0
 
 ---
 
+## [0.3.1] - 2026-07-29
+
+### Fixed
+
+- Preserved repository-relative reference artifact paths from
+  `reference/theory-reference.toml`.
+- Fixed reference registry construction so configured artifact paths resolve
+  through the shared repository path helpers.
+- Fixed reference artifact validation to preserve artifact kinds and configured
+  repository-relative paths.
+- Fixed strict unfinished-work validation to inspect the configured reference
+  artifact paths without reducing them to basenames.
+- Fixed public Lean surface extraction to load configured reference artifacts
+  through the shared path-resolution layer.
+- Added regression tests for artifact kinds, repository-relative paths, public
+  Lean symbol extraction, strict validation paths, and export-root-relative
+  filenames.
+
+---
+
 ## [0.3.0] - 2026-07-29
 
 ### Added
@@ -194,7 +214,8 @@ git push origin :refs/tags/vX.Z.Y
 
 ## Links
 
-[Unreleased]: https://github.com/structural-explainability/se-theory-reference-kit/compare/v0.3.0...HEAD
+[Unreleased]: https://github.com/structural-explainability/se-theory-reference-kit/compare/v0.3.1...HEAD
+[0.3.1]: https://github.com/structural-explainability/se-theory-reference-kit/releases/tag/v0.3.1
 [0.3.0]: https://github.com/structural-explainability/se-theory-reference-kit/releases/tag/v0.3.0
 [0.2.0]: https://github.com/structural-explainability/se-theory-reference-kit/releases/tag/v0.2.0
 [0.1.0]: https://github.com/structural-explainability/se-theory-reference-kit/releases/tag/v0.1.0

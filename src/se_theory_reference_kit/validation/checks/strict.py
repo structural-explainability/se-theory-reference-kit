@@ -1,9 +1,9 @@
 """validation/checks/strict.py - Strict-only unfinished-work marker check."""
 
 from collections.abc import Iterable
-from pathlib import Path
 
 from se_theory_reference_kit.base.io import read_text
+from se_theory_reference_kit.base.paths import reference_artifact_path
 from se_theory_reference_kit.base.results import CheckResult, failure, ok
 from se_theory_reference_kit.validation.context import ReferenceRunContext
 from se_theory_reference_kit.validation.registry import Check
@@ -42,7 +42,11 @@ def check_strict_no_todo(context: ReferenceRunContext) -> Iterable[CheckResult]:
     findings: list[CheckResult] = []
 
     for artifact_id, rel_path in _configured_artifact_paths(context):
-        path = context.reference_root / rel_path
+        path = reference_artifact_path(
+            rel_path,
+            root=context.repo_root,
+            reference_dir_name=context.config.reference_dir_name,
+        )
         if path.suffix.lower() not in CHECKED_SUFFIXES:
             continue
 
@@ -76,7 +80,7 @@ def _configured_artifact_paths(
     paths: list[tuple[str, str]] = []
 
     for kind, source in context.config.surface_kind_sources.items():
-        paths.append((kind, Path(source).name))
+        paths.append((kind, source))
 
     return paths
 
