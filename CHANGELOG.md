@@ -13,6 +13,65 @@ and this project adheres to **[Semantic Versioning](https://semver.org/spec/v2.0
 
 ---
 
+## [0.4.0] - 2026-10-03
+
+### Added
+
+- Added a shared `repo_relative_path` helper for converting internal filesystem
+  paths to repository-relative POSIX paths at generated-artifact boundaries.
+- Added regression coverage verifying repository-relative paths in generated
+  registry JSON and aggregate reference catalogs.
+- Added generated-file regression coverage confirming exported reference paths
+  remain portable after serialization.
+
+### Changed
+
+- Updated generated registry exports to receive the repository root explicitly
+  and serialize source reference paths relative to that root.
+- Updated generated reference catalogs to serialize loaded reference-artifact
+  paths relative to the repository root.
+- Kept absolute `Path` objects for internal filesystem operations while making
+  committed generated metadata repository-relative and platform-independent.
+- Updated package metadata and development documentation to match the current
+  Python 3.15, `uv`, `prek`, Ruff, `ty`, pytest, and Zensical workflow.
+- Updated repository-manifest terminology to describe configuration-driven
+  theory-reference loading rather than the removed index-based model.
+- Updated manifest validation commands to use the published
+  `se-manifest-schema` command surface.
+- Simplified release metadata maintenance so package versions remain derived
+  from Git tags.
+- Added `se-theory-reference-kit` as the primary CLI executable so the
+  published package can be run directly with
+  `uvx se-theory-reference-kit@latest`.
+- Retained `se-theory-reference` as a backward-compatible command alias.
+
+### Removed
+
+- Removed the Hatch VCS fallback version so distribution builds fail rather
+  than silently use a stale version when valid Git version metadata is
+  unavailable.
+- Removed stale project-template configuration that referenced unrelated
+  coverage targets, warning filters, and research-project directories.
+- Removed stale `pre-commit` and Pyright development instructions in favor of
+  `prek` and `ty`.
+
+### Fixed
+
+- Fixed generated registry JSON leaking absolute machine-specific filesystem
+  paths through `reference_path`.
+- Fixed generated reference catalogs leaking absolute machine-specific
+  filesystem paths through `reference_paths` and
+  `reference_artifacts[].path`.
+- Fixed generated reference metadata so the same committed artifacts are
+  reproducible across Windows, Linux, CI, and differently located repository
+  clones.
+- Fixed tests and command wiring to propagate the repository root through both
+  registry-export and catalog-export paths.
+- Fixed package test coverage configuration to target
+  `src/se_theory_reference_kit/`.
+
+---
+
 ## [0.3.1] - 2026-07-29
 
 ### Fixed
@@ -165,19 +224,39 @@ Follow these steps exactly when creating a new release.
 
 1.1. CITATION.cff: update version and date-released
 1.2. CHANGELOG.md: add section, move unreleased entries, update links
-1.3. pyproject.toml: update build fallback-version (near end of the file)
 
 ### Task 2. Validate
 
 From PowerShell at the repository root:
 
 ```pwsh
-.\rel.ps1
-```
+# set up or update Python environment
+.\sit.ps1
 
-The script refreshes the development environment and performs the required
-command-surface, manifest, pre-commit, test, type-checking, documentation,
-architecture, code-health, build, and distribution-metadata checks.
+# Update GitHub Actions and pin all action references to immutable SHAs.
+uvx gha-tools autoupdate --pin=all --write .github/workflows
+
+# Audit the resulting GitHub configuration for security findings.
+uvx zizmor@latest .github/
+
+# Validate.
+uvx cffconvert --validate
+uvx se-manifest-schema validate-manifest --strict
+
+# check complexity; no output is good (all A or B)
+uvx radon cc src/se_theory_reference_kit -s -a -n C
+
+# Check local command surface.
+uv run se-theory-reference-kit --help
+uv run se-theory-reference-kit validate --help
+uv run se-theory-reference-kit scaffold --help
+uv run se-theory-reference-kit export --help
+uv run se-theory-reference-kit catalog --help
+uv run se-theory-reference-kit inspect --help
+
+uv build
+uvx twine check dist/*
+```
 
 Proceed when the script completes successfully.
 
@@ -214,7 +293,8 @@ git push origin :refs/tags/vX.Z.Y
 
 ## Links
 
-[Unreleased]: https://github.com/structural-explainability/se-theory-reference-kit/compare/v0.3.1...HEAD
+[Unreleased]: https://github.com/structural-explainability/se-theory-reference-kit/compare/v0.4.0...HEAD
+[0.4.0]: https://github.com/structural-explainability/se-theory-reference-kit/releases/tag/v0.4.0
 [0.3.1]: https://github.com/structural-explainability/se-theory-reference-kit/releases/tag/v0.3.1
 [0.3.0]: https://github.com/structural-explainability/se-theory-reference-kit/releases/tag/v0.3.0
 [0.2.0]: https://github.com/structural-explainability/se-theory-reference-kit/releases/tag/v0.2.0

@@ -34,65 +34,63 @@ role = "theory-reference-engine"
 
 [depends]
 required = []
-optional = [
-  { repository = "se-manifest-schema", kind = "tooling", version = "v0.4.1" },
-]
+optional = []
 
 # === Provided Artifacts ===
 
 [provides]
 artifacts = [
-  "theory-reference-loading-engine",
-  "theory-reference-validation-engine",
-  "theory-reference-scaffold-engine",
-  "lean-surface-coverage-engine",
-  "reference-artifact-export-engine",
-  "reference-catalog-export-engine",
-  "reference-validation-result-model",
+    "theory-reference-loading-engine",
+    "theory-reference-validation-engine",
+    "theory-reference-scaffold-engine",
+    "lean-surface-coverage-engine",
+    "reference-artifact-export-engine",
+    "reference-catalog-export-engine",
+    "reference-validation-result-model",
 ]
 
 # === Scope ===
 
 [scope]
 includes = [
-  "generic theory-reference index loading",
-  "generic theory-reference TOML artifact traversal",
-  "generic Lean declaration extraction",
-  "generic Lean public-surface coverage checks",
-  "generic reference artifact validation machinery",
-  "generic reference scaffolding and stub generation",
-  "generic generated JSON export machinery",
-  "generic theory-reference catalog export machinery",
-  "generic validation result model",
-  "generic strict-warning classification support",
+    "generic theory-reference configuration loading",
+    "generic theory-reference TOML artifact traversal",
+    "generic Lean declaration extraction",
+    "generic Lean public-surface coverage checks",
+    "generic reference artifact validation machinery",
+    "generic reference scaffolding and stub generation",
+    "generic generated JSON export machinery",
+    "generic theory-reference catalog export machinery",
+    "generic validation result model",
+    "generic strict-warning classification support",
 ]
 
 excludes = [
-  "Lean theory semantics",
-  "formal correctness claims",
-  "theory-specific public symbol lists",
-  "theory-specific export artifact maps",
-  "neutral substrate definitions",
-  "transformation definitions",
-  "identity regime definitions",
-  "persistence definitions",
-  "structural explainability definitions",
-  "contract artifact packaging",
-  "contract dependency resolution",
-  "operational validation pipelines",
-  "domain-specific mappings",
-  "runtime systems",
-  "manifest schema authority",
-  "manifest validation rule ownership",
-  "claims of truth, correctness, legitimacy, obligation, or enforcement",
+    "Lean theory semantics",
+    "formal correctness claims",
+    "theory-specific public symbol lists",
+    "theory-specific export artifact maps",
+    "neutral substrate definitions",
+    "transformation definitions",
+    "identity regime definitions",
+    "persistence definitions",
+    "structural explainability definitions",
+    "contract artifact packaging",
+    "contract dependency resolution",
+    "operational validation pipelines",
+    "domain-specific mappings",
+    "runtime systems",
+    "manifest schema authority",
+    "manifest validation rule ownership",
+    "claims of truth, correctness, legitimacy, obligation, or enforcement",
 ]
 
 # === Validation ===
 
 [validation]
-entrypoint = "uv run se-manifest validate-manifest --path SE_MANIFEST.toml"
-strict_entrypoint = "uv run se-manifest validate-manifest --path SE_MANIFEST.toml --strict"
-tag_entrypoint = "uv run se-manifest check-version --require-tag"
+entrypoint = "uvx se-manifest-schema validate-manifest"
+strict_entrypoint = "uvx se-manifest-schema validate-manifest --strict"
+tag_entrypoint = "uvx se-manifest-schema check-version --require-tag"
 
 # === Governance ===
 

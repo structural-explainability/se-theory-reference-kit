@@ -1,8 +1,10 @@
 """export/catalog.py - Generic reference catalog construction."""
 
 from dataclasses import dataclass
+from pathlib import Path
 from typing import Any
 
+from se_theory_reference_kit.base.paths import repo_relative_path
 from se_theory_reference_kit.reference.registry import ReferenceRegistry
 
 type JsonObject = dict[str, Any]
@@ -20,6 +22,7 @@ class CatalogEntry:
 def build_reference_catalog(
     *,
     registry: ReferenceRegistry,
+    repo_root: Path,
     schema: str,
     source: str,
     namespace: str,
@@ -32,6 +35,7 @@ def build_reference_catalog(
 
     Args:
         registry: Loaded reference registry.
+        repo_root: Repository root used to produce portable relative paths.
         schema: Catalog schema id.
         source: Owning repository slug.
         namespace: Reference namespace.
@@ -44,7 +48,7 @@ def build_reference_catalog(
         CatalogEntry(
             artifact_id=item.artifact_id,
             kind=item.kind,
-            path=item.path.as_posix(),
+            path=repo_relative_path(item.path, repo_root),
         )
         for item in registry.artifacts
     ]

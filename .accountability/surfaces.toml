@@ -108,7 +108,7 @@ ai_max_authority = "drafting"
 id = "project-configuration"
 object_kind = "file"
 paths = ["pyproject.toml"]
-description = "Project identity, Python version contract, dependencies, optional dependency groups, build metadata, tool configuration, and command exposure."
+description = "Project identity, Python version contract, dependency groups, build metadata, tool configuration, and command exposure."
 
 [[surface.role]]
 kind = "dependency_boundary"
@@ -190,14 +190,7 @@ ai_max_authority = "advisory"
 [[surface]]
 id = "repository-governance"
 object_kind = "directory"
-paths = [
-    "AGENTS.md",
-    "AI_USE.md",
-    "CONTRIBUTING.md",
-    "DECISIONS.md",
-    "README.md",
-    "SECURITY.md",
-]
+paths = ["AI_USE.md", "DECISIONS.md", "README.md"]
 description = "Repository governance, contribution, AI-use, security, accountability, and decision records."
 
 [[surface.role]]
@@ -257,16 +250,13 @@ ai_max_authority = "drafting"
 # === Verification ===
 
 [verification]
+# Use local versions for verification commands.
 commands = [
-    "uv sync --extra dev --extra docs --upgrade",
-    "uvx pre-commit run --all-files",
-    "uv run se-theory-reference --help",
-    "uv run se-theory-reference validate --help",
-    "uv run se-theory-reference scaffold --help",
-    "uv run se-theory-reference export --help",
-    "uv run se-theory-reference catalog --help",
-    "uv run se-theory-reference inspect --help",
-    "uv run python -m pyright",
-    "uv run python -m pytest",
-    "uv run python -m zensical build",
+    "uv run se-theory-reference-kit export",
+    "uv run se-theory-reference-kit export --check",
+    "uv run se-theory-reference-kit catalog",
+    "uv run se-theory-reference-kit catalog --check",
+    "uv run se-theory-reference-kit inspect",
+    "uv run se-theory-reference-kit validate",
+    "uv run se-theory-reference-kit validate --strict",
 ]

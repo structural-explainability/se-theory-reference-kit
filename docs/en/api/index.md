@@ -1,6 +1,6 @@
 # API Reference
 
-The API reference is rendered from Python source with `mkdocstrings`.
+The API reference is rendered from Python source.
 
 ## Package
 

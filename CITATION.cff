@@ -1,17 +1,19 @@
 # ============================================================
 # CITATION.cff (How to cite this project)
 # ============================================================
-
 # REQ.UNIVERSAL: Professional open projects SHOULD include this file.
+# May reference upstream dependencies, but must not refer to downstream.
 # USAGE: See https://citation-file-format.github.io/ for details.
+# check with:
+# uvx cffconvert --validate
 
 cff-version: "1.2.0"
+message: "If you use this work, please cite it using the metadata in CITATION.cff."
 type: software
-message: "If you use this work, please cite it using the metadata in this file."
 
 title: "SE Theory: Reference Kit"
-version: "0.3.1"
-date-released: "2026-07-29"
+version: "0.4.0"
+date-released: "2026-10-03"
 
 authors:
   - family-names: Case

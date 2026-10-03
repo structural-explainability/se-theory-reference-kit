@@ -8,7 +8,7 @@ from se_theory_reference_kit.reference.registry import build_registry_from_confi
 from se_theory_reference_kit.validation.context import ReferenceRunContext
 from se_theory_reference_kit.validation.registry import Check
 
-__all__ = ["CHECK_ID", "check_exports_current", "CHECK"]
+__all__ = ["CHECK", "CHECK_ID", "check_exports_current"]
 
 CHECK_ID = "reference.exports"
 
@@ -24,6 +24,7 @@ def check_exports_current(context: ReferenceRunContext) -> Iterable[CheckResult]
     results = export_registries(
         specs=context.export_specs,
         registry=registry,
+        repo_root=context.repo_root,
         reference_root=context.repo_root / context.config.reference_dir_name,
         output_root=context.repo_root / context.config.generated_data_dir,
         repo_slug=context.config.repo_slug,

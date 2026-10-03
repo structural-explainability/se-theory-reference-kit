@@ -29,18 +29,28 @@ The kit owns generic loading, validation, scaffolding, and export machinery.
 Each theory repository owns its own public Lean surface
 declarations and export specifications.
 
-## Package Interface
+## Install
 
-- The Python import package is `se_theory_reference_kit`.
-- The Python distribution package is `se-theory-reference-kit`.
-- The public command is `se-theory-reference`.
+```shell
+uv add se-theory-reference-kit
+uv sync
+```
 
-## Command Reference
+## Usage
 
-<details>
-<summary>Show command reference</summary>
+```shell
+uvx se-theory-reference-kit@latest export
+uvx se-theory-reference-kit@latest export --check
+uvx se-theory-reference-kit@latest catalog
+uvx se-theory-reference-kit@latest catalog --check
+uvx se-theory-reference-kit@latest inspect
+uvx se-theory-reference-kit@latest validate
+uvx se-theory-reference-kit@latest validate --strict
+```
 
-### In a machine terminal
+## Developer
+
+### Clone Project Repository and Open in VS Code
 
 Open a machine terminal where you want the project:
 
@@ -51,47 +61,40 @@ cd se-theory-reference-kit
 code .
 ```
 
-### In a VS Code terminal
+### Manage Environment
 
 Use VS Code Menu:
 View / Command Palette / `Developer: Reload Window` to refresh.
 
 ```shell
+# set up or update Python environment
+# uvx pup-clean --delete
 uv self update
-uv python pin 3.15
+uv python install
 uv lock --upgrade
-uv sync --extra dev --extra docs --upgrade
+uv sync
+uv audit
 
-uvx pre-commit install
-uvx pre-commit autoupdate
-
-uv run se-theory-reference --help
-uv run se-theory-reference validate --help
-uv run se-theory-reference scaffold --help
-uv run se-theory-reference export --help
-uv run se-theory-reference catalog --help
-uv run se-theory-reference inspect --help
-
-# validate manifest file
-uvx se-manifest-schema validate-manifest --strict
-
+# set up and run git hooks
+uv run prek install --force
+uv run prek update
 git add -A
-uvx pre-commit run --all-files
+uv run prek run --all-files
 # repeat if changes were made
-uvx pre-commit run --all-files
+uv run prek run --all-files
 
-uv run python -m pyright
+# Check
+uv run se-theory-reference-kit@latest export --help
+uv run se-theory-reference-kit@latest catalog --help
+uv run se-theory-reference-kit@latest inspect --help
+uv run se-theory-reference-kit@latest validate --help
+
+# run common chores
+uv run ruff format .
+uv run ruff check . --fix
+uv run ty check
 uv run python -m pytest
 uv run python -m zensical build
-
-# check import layers
-uvx --python 3.13 --from import-linter lint-imports --config .github/.importlinter
-
-# check complexity; no output is good (all A or B)
-uvx radon cc src/se_theory_reference_kit -s -a -n C
-
-uv build
-uvx twine check dist/*
 
 # save progress
 git add -A
@@ -99,11 +102,13 @@ git commit -m "update"
 git push -u origin main
 ```
 
-</details>
-
 ## Authority Manifest
 
 [.accountability/surfaces.toml](./.accountability/surfaces.toml)
+
+## Changelog
+
+[CHANGELOG.md](./CHANGELOG.md)
 
 ## Citation
 

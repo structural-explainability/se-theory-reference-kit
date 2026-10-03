@@ -48,6 +48,7 @@ def run_catalog_command(args: Namespace) -> int:
     payload = build_reference_catalog(
         registry=registry,
         schema=config.catalog_schema,
+        repo_root=command_context.repo_root,
         source=config.repo_slug,
         namespace=namespace,
         artifact=config.catalog_artifact_name,

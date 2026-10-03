@@ -43,26 +43,26 @@ The kit does not own:
 - domain mappings,
 - runtime systems.
 
-## Repository ownership boundary
+## Repository Scope
 
 Each theory repository owns its own declared public Lean surface and export
 specifications.
 
-The shared kit consumes those declarations through typed repository-provided
-objects. This keeps theory content in the theory repository and keeps the kit
-focused on reusable mechanics.
+The shared kit loads repository-provided configuration and reference artifacts
+into typed internal objects. This keeps theory content in the theory repository
+and keeps the kit focused on reusable mechanics.
 
-## Public command
+## Public Commands
 
-The package exposes one public command:
+The published package runs with `uvx`:
 
 ```shell
-se-theory-reference
+uvx se-theory-reference-kit@latest validate
 ```
 
-See [Commands](./commands.md) for the command responsibilities.
+See [Commands](./commands.md) for command responsibilities.
 
-## API reference
+## API Reference
 
 The Python API reference is generated from source during documentation builds.
 

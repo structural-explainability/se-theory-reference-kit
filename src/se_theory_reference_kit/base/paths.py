@@ -150,3 +150,8 @@ def lean_module_to_path(
 
     relative_path = Path(*parts).with_suffix(".lean")
     return resolve_repo_path(relative_path, root=root)
+
+
+def repo_relative_path(path: Path, repo_root: Path) -> str:
+    """Return a repository-relative POSIX path."""
+    return path.resolve().relative_to(repo_root.resolve()).as_posix()

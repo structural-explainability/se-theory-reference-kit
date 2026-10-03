@@ -10,6 +10,7 @@ from se_theory_reference_kit.base.paths import (
     lean_module_to_path,
     reference_artifact_path,
     reference_dir,
+    repo_relative_path,
     resolve_repo_path,
 )
 
@@ -76,3 +77,11 @@ def test_lean_module_to_path_requires_public_root(tmp_path: Path) -> None:
             root=root,
             lean_public_root="SE.NeutralSubstrate",
         )
+
+
+def test_repo_relative_path_returns_posix_path(tmp_path: Path) -> None:
+    """Repository-relative paths use portable POSIX separators."""
+    root = tmp_path / "repo"
+    path = root / "reference" / "types.toml"
+
+    assert repo_relative_path(path, root) == "reference/types.toml"

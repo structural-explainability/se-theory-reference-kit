@@ -107,12 +107,12 @@ def reference_artifact_meta(document: ReferenceDocument) -> dict[str, object]:
         Copy of the [meta] table, or an empty dictionary when absent.
 
     Raises:
-        ValueError: If [meta] is present but not a table.
+        TypeError: If [meta] is present but not a table.
     """
     meta = document.get("meta", {})
     if not isinstance(meta, dict):
         msg = "Expected [meta] table"
-        raise ValueError(msg)
+        raise TypeError(msg)
 
     # WHY: isinstance narrowing drops the parameters; re-assert them for the copy.
     return dict(cast("dict[str, object]", meta))
@@ -132,12 +132,12 @@ def ordered_table_values(
         Ordered table entries. Each entry receives an id if missing.
 
     Raises:
-        ValueError: If the table is not a table of tables.
+        TypeError: If the table or entries are not tables.
     """
     table = document.get(table_name, {})
     if not isinstance(table, dict):
         msg = f"Expected [{table_name}.<id>] tables"
-        raise ValueError(msg)
+        raise TypeError(msg)
 
     # WHY: isinstance narrowing drops the parameters; re-assert before iterating.
     table_map = cast("dict[str, object]", table)
@@ -146,7 +146,7 @@ def ordered_table_values(
     for key, value in table_map.items():
         if not isinstance(value, dict):
             msg = f"Expected table entry for {table_name}.{key}"
-            raise ValueError(msg)
+            raise TypeError(msg)
 
         entry = dict(cast("dict[str, object]", value))
         entry.setdefault("id", str(key))

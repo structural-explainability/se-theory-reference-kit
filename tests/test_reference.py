@@ -67,7 +67,7 @@ def test_reference_artifact_meta_requires_table() -> None:
         "artifact": "types"
     }
 
-    with pytest.raises(ValueError):
+    with pytest.raises(TypeError):
         reference_artifact_meta({"meta": "bad"})
 
 

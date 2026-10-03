@@ -10,7 +10,7 @@ theory repository owns theory declarations
 shared kit owns generic repository mechanics
 ```
 
-## Architectural boundary
+## Architectural Boundary
 
 The kit is not a theory repository.
 It does not define Lean semantics and does
@@ -20,25 +20,27 @@ The kit provides reusable Python infrastructure that can inspect repository
 state, compare declarations, validate synchronization, generate derived
 artifacts, and expose those operations through a stable command surface.
 
-## Repo-provided declarations
+## Repo-Provided Configuration
 
-A theory repository provides typed declarations that describe its local
-reference-tooling contract.
+A theory repository provides `reference/theory-reference.toml` and its
+repo-owned reference artifacts.
 
-Those declarations identify the repository, its public Lean root, its public
-surface symbols, and its generated export specifications.
+Those files describe repository identity, the public Lean root, mapped
+reference surfaces, and generated export specifications.
 
-The kit loads those declarations, validates their shape, and uses them to drive
-generic operations.
-The declarations remain owned by the theory repository.
+The kit loads repository-provided configuration and reference artifacts into
+typed internal objects and uses them to drive generic operations.
 
-## Reference workflow
+The configuration and reference artifacts remain owned by the theory
+repository.
+
+## Reference Workflow
 
 The reference workflow has this general shape:
 
 ```text
 repo-owned Lean source
-  -> repo-owned public surface declaration
+  -> repo-owned theory-reference configuration
   -> repo-owned reference artifacts
   -> shared validation and inspection
   -> generated exports and catalogs
@@ -58,7 +60,7 @@ checks, but it does not mutate the kit's defaults.
 Validation checks synchronization, structure, freshness, and coverage.
 It does not establish formal truth or semantic correctness.
 
-## Command layer
+## Command Layer
 
 The command layer owns argument parsing and orchestration.
 
@@ -66,7 +68,7 @@ Command modules delegate to engine modules.
 They do not own validation logic, export construction,
 reference artifact semantics, or Lean declaration semantics.
 
-## Documentation model
+## Documentation Model
 
 Human-authored documentation describes architecture, workflow, and ownership
 boundaries.
@@ -75,20 +77,12 @@ Generated API documentation mirrors the Python source tree during documentation
 builds.
 Generated API pages are not hand-maintained.
 
-## Dependency direction
+## Dependency Direction
 
-The dependency direction should remain one-way:
+Dependency direction should remain inward from orchestration toward reusable
+engine modules.
 
-```text
-commands
-  -> declarations
-  -> lean
-  -> reference
-  -> export
-  -> validation
-  -> base
-```
+Engine modules must not import command modules.
 
-Engine modules should not import command modules.
-
-Repo-specific theory declarations should not be moved into the shared kit.
+Repo-specific theory configuration and reference content must not be moved into
+the shared kit.

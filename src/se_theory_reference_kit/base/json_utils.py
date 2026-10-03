@@ -6,7 +6,7 @@ from typing import Any
 
 from se_theory_reference_kit.base.io import write_text
 
-JsonObject = dict[str, Any]
+type JsonObject = dict[str, Any]
 
 
 def encode_json(payload: JsonObject) -> str:

@@ -7,9 +7,9 @@ import re
 from se_theory_reference_kit.base.io import read_text
 
 __all__ = [
+    "DECL_RE",
     "LEAN_DECL_TO_SECTION",
     "SECTION_LEAN_KINDS",
-    "DECL_RE",
     "LeanDecl",
     "extract_decls",
     "extract_for_section",

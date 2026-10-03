@@ -18,8 +18,8 @@ from se_theory_reference_kit.base.results import CheckResult
 from se_theory_reference_kit.validation.context import ReferenceRunContext
 
 __all__ = [
-    "CheckFunc",
     "Check",
+    "CheckFunc",
     "CheckRegistry",
 ]
 

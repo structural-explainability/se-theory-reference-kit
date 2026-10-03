@@ -1,5 +1,6 @@
 """tests/test_export.py - Generated export helper tests."""
 
+import json
 from pathlib import Path
 
 from se_theory_reference_kit.declarations.export_spec import ExportSpec
@@ -58,12 +59,14 @@ def test_build_registry_payload_uses_export_spec(tmp_path: Path) -> None:
         spec=spec,
         document=document,
         source_path=source_path,
+        repo_root=root,
         repo_slug="se-example",
         reference_namespace="se.example",
     )
 
     assert payload["schema"] == "se-example-type-registry-1"
     assert payload["artifact"] == "type-registry"
+    assert payload["reference_path"] == "reference/types.toml"
     assert payload["types"] == [
         {
             "id": "Primitive",
@@ -95,6 +98,7 @@ def test_export_registries_writes_and_checks_generated_json(tmp_path: Path) -> N
     written = export_registries(
         specs=(spec,),
         registry=registry,
+        repo_root=root,
         reference_root=root / "reference",
         output_root=output_root,
         repo_slug="se-example",
@@ -104,6 +108,7 @@ def test_export_registries_writes_and_checks_generated_json(tmp_path: Path) -> N
     checked = export_registries(
         specs=(spec,),
         registry=registry,
+        repo_root=root,
         reference_root=root / "reference",
         output_root=output_root,
         repo_slug="se-example",
@@ -114,6 +119,12 @@ def test_export_registries_writes_and_checks_generated_json(tmp_path: Path) -> N
     assert written[0].wrote
     assert checked[0].current
     assert (output_root / "type-registry.json").is_file()
+
+    generated = json.loads(
+        (output_root / "type-registry.json").read_text(encoding="utf-8")
+    )
+
+    assert generated["reference_path"] == "reference/types.toml"
 
 
 def test_build_reference_catalog_uses_loaded_registry(tmp_path: Path) -> None:
@@ -128,6 +139,7 @@ def test_build_reference_catalog_uses_loaded_registry(tmp_path: Path) -> None:
 
     catalog = build_reference_catalog(
         registry=registry,
+        repo_root=root,
         schema="se-example-catalog-1",
         source="se-example",
         namespace="se.example",
@@ -135,6 +147,11 @@ def test_build_reference_catalog_uses_loaded_registry(tmp_path: Path) -> None:
     )
 
     assert catalog["schema"] == "se-example-catalog-1"
-    assert catalog["reference_paths"] == [
-        (root / "reference" / "types.toml").as_posix()
+    assert catalog["reference_paths"] == ["reference/types.toml"]
+    assert catalog["reference_artifacts"] == [
+        {
+            "id": "types",
+            "kind": "type",
+            "path": "reference/types.toml",
+        }
     ]

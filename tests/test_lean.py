@@ -23,14 +23,7 @@ def test_extract_decls_reads_top_level_lean_declarations(tmp_path: Path) -> None
     """Lean declarations are extracted by name, kind, and section."""
     lean_file = tmp_path / "Core.lean"
     lean_file.write_text(
-        "\n".join(
-            [
-                "inductive PrimitiveKind where",
-                "def Neutral : Prop := True",
-                "axiom framework_relativity : True",
-                "theorem neutrality_theorem : True := by trivial",
-            ]
-        ),
+        "inductive PrimitiveKind where\ndef Neutral : Prop := True\naxiom framework_relativity : True\ntheorem neutrality_theorem : True := by trivial",
         encoding="utf-8",
     )
 

@@ -12,7 +12,7 @@ from se_theory_reference_kit.reference.validation import (
 from se_theory_reference_kit.validation.context import ReferenceRunContext
 from se_theory_reference_kit.validation.registry import Check
 
-__all__ = ["CHECK_ID", "check_reference_artifacts", "CHECK"]
+__all__ = ["CHECK", "CHECK_ID", "check_reference_artifacts"]
 
 CHECK_ID = "reference.artifacts"
 

@@ -11,7 +11,7 @@ from se_theory_reference_kit.reference.registry import (
 from se_theory_reference_kit.validation.context import ReferenceRunContext
 from se_theory_reference_kit.validation.registry import Check
 
-__all__ = ["CHECK_ID", "check_lean_surface", "CHECK"]
+__all__ = ["CHECK", "CHECK_ID", "check_lean_surface"]
 
 CHECK_ID = "lean.surface"
 

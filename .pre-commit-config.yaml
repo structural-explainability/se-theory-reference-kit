@@ -1,36 +1,44 @@
 # ============================================================
-# .pre-commit-config.yaml (SE Theory Identity Regimes)
+# .pre-commit-config.yaml (ALL-PY-SRC-REPOS)
 # ============================================================
-# VARIANT: se-theory-reference-kit
-# Updated: 2026-06-01
-
-# Fast, consistent repo hygiene before commit.
+# Updated: 2026-10-01
 #
-# These hooks complement and do not replace:
-# - .editorconfig
-# - .gitattributes
-# - pyproject.toml
+# REQ: Professional projects using Python src/ SHOULD include git hooks.
+# WHY: Minimize git diffs, catch common issues early, and support collaboration.
 #
-# Local usage:
-#   uv self update
-#   uvx pre-commit install
-#   uvx pre-commit run --all-files
+# OBS: These hooks use and do NOT override:
+#   - .editorconfig (whitespace / indentation)
+#   - .gitattributes (EOL normalization)
+#   - pyproject.toml (Python tool settings)
 #
-# Ruff lint runs before Ruff format in pre-commit so autofixes
-# are formatted in the same pass.
+# OPTIONAL LOCAL USAGE (keep tools updated):
+#   uv run prek install --force
+#   uv run prek update
+#
+# OPTIONAL LOCAL USAGE (run all hooks on all git-tracked files):
+#   git add -A
+#   uv run prek run --all-files
+#   The first time, it may indicate errors / fixes,
+#   So just re-run the command (up arrow) and it often goes all green.
+#
+# NOTE: Enabling hooks is optional. It is not needed to clone or commit.
+# You can skip it with the --no-verify option, e.g.:
+#   git commit -m "your message" --no-verify
 
 exclude: |
   (?x)^(
-    \.DS_Store|
+    .*\.egg-info/|
+    .*\.log|
     \.coverage|
+    \.DS_Store|
     \.ipynb_checkpoints/|
+    \.lake/|
     \.mypy_cache/|
     \.nox/|
     \.pytest_cache/|
     \.ruff_cache/|
     \.tox/|
     \.venv/|
-    .*\.(egg-info)/|
     __pycache__/|
     _minted.*/|
     build/|
@@ -40,12 +48,11 @@ exclude: |
     lake-packages/|
     node_modules/|
     out/|
-    site/ |
-    LICENSE
+    site/
   )
 
 repos:
-  # === REPO: PRE-COMMIT HOOKS (cross-platform, zero config) ===
+  # === REPO: COMMON GIT HOOKS (cross-platform, zero config) ===
   #
   # These hooks prevent problems that show up later as:
   #   - mysterious diffs
@@ -54,7 +61,7 @@ repos:
   - repo: https://github.com/pre-commit/pre-commit-hooks
     rev: v6.0.0
     hooks:
-      # === PRE-COMMIT: NORMALIZE FILE FORMATTING ===
+      # === HOOK: NORMALIZE FILE FORMATTING ===
 
       - id: trailing-whitespace
         name: A1) Clean trailing whitespace (per .editorconfig)
@@ -63,12 +70,16 @@ repos:
       - id: end-of-file-fixer
         name: A2) End files with a newline (per .gitattributes)
 
-      # === PRE-COMMIT: CHECK DATA FILE FORMATS ===
+      - id: mixed-line-ending
+        name: A3) Normalize line endings to LF before linters
+        args: [--fix=lf] # OBS: Windows working copies may be CRLF.
+
+      # === HOOK: CHECK DATA FILE FORMATS ===
 
       - id: check-json
         name: B1) Validate JSON syntax (except .vscode/)
-        # WHY: VSCode settings may include comments, which are non-standard JSON.
-        exclude: ^\.vscode/.*\.json$
+        # WHY: VS Code settings may include comments, which are non-standard JSON.
+        exclude: (^|/)\.vscode/.*\.json$
 
       - id: check-toml
         name: B2) Validate TOML syntax
@@ -76,10 +87,10 @@ repos:
       - id: check-yaml
         name: B3) Validate YAML syntax
         files: \.(yml|yaml)$
-        # WHY: VS Code config files are editor-specific
-        exclude: ^(\.vscode/)
+        # WHY: VS Code config files are editor-specific.
+        exclude: ^\.vscode/
 
-      # === PRE-COMMIT: CHECK FOR COMMON PROBLEMS ===
+      # === HOOK: CHECK FOR COMMON PROBLEMS ===
 
       - id: check-added-large-files
         name: C1) Prevent accidental commits of large binaries
@@ -91,41 +102,18 @@ repos:
       - id: check-case-conflict
         name: C3) Check for filename case conflicts
 
-  # === REPO: RUFF PRE-COMMIT (for Python code) ===
+  # === REPO: RUFF HOOKS (for Python code) ===
 
   - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: v0.16.0
+    rev: v0.16.10
     hooks:
-      - id: ruff-check
-        name: D1) Ruff linter with autofix (runs first in pre-commit)
-        # WHY: Lint fixes run first so formatter sees the corrected code.
-        args: [--fix, --exit-non-zero-on-fix]
-
+      # === RUFF CHECKS ===
       - id: ruff-format
-        name: D2) Ruff formatter (runs after linter fixes)
-        # WHY: Formats whatever structure the linter left behind.
+        name: D1) Ruff format (before linting)
 
-  # === EXECUTE: UNIVERSAL SE REPOSITORY CHECKS ===
-
-  - repo: local
-    hooks:
-
-      - id: markdownlint
-        name: E1) Markdown lint
-        language: system
-        entry: npx markdownlint-cli2 --fix
-        pass_filenames: false
-        always_run: true
-
-      - id: se-validate-manifest
-        name: E2) Validate SE manifest against schema
-        language: system
-        entry: uvx se-manifest-schema validate-manifest --path SE_MANIFEST.toml --strict
-        pass_filenames: false
-        always_run: true
-
-      # === EXECUTE: ADDITIONAL REPO SPECIFIC LOGIC ===
-
+      - id: ruff
+        name: D2) Ruff linter (autofix errors, style issues )
+        args: [--fix, --exit-non-zero-on-fix]
 
 # === GLOBAL SETTINGS ===
 # ALT: Set fail_fast to true to stop at first failure.

@@ -5,6 +5,7 @@ from pathlib import Path
 from typing import Any
 
 from se_theory_reference_kit.base.json_utils import encode_json, write_or_check_text
+from se_theory_reference_kit.base.paths import repo_relative_path
 from se_theory_reference_kit.declarations.export_spec import ExportSpec
 from se_theory_reference_kit.reference.artifacts import (
     ReferenceDocument,
@@ -38,6 +39,7 @@ def build_registry_payload(
     spec: ExportSpec,
     document: ReferenceDocument,
     source_path: Path,
+    repo_root: Path,
     repo_slug: str,
     reference_namespace: str,
 ) -> JsonObject:
@@ -47,6 +49,7 @@ def build_registry_payload(
         spec: Repo-owned export specification.
         document: Parsed reference artifact.
         source_path: Source reference artifact path.
+        repo_root: Repository root used to produce portable relative paths.
         repo_slug: Owning repository slug.
         reference_namespace: Reference namespace for generated payloads.
 
@@ -65,7 +68,7 @@ def build_registry_payload(
             "artifact",
             spec.source_name.removesuffix(".toml"),
         ),
-        "reference_path": source_path.as_posix(),
+        "reference_path": repo_relative_path(source_path, repo_root),
         spec.payload_key: entries,
     }
 
@@ -74,6 +77,7 @@ def export_registry(
     *,
     spec: ExportSpec,
     registry: ReferenceRegistry,
+    repo_root: Path,
     reference_root: Path,
     output_root: Path,
     repo_slug: str,
@@ -85,7 +89,8 @@ def export_registry(
     Args:
         spec: Repo-owned export specification.
         registry: Loaded reference registry.
-        reference_root: Reference artifact root.
+        repo_root: Repository root used to produce portable relative paths.
+        reference_root: Reference artifact root used to locate source artifacts.
         output_root: Generated output root.
         repo_slug: Owning repository slug.
         reference_namespace: Reference namespace.
@@ -116,6 +121,7 @@ def export_registry(
         spec=spec,
         document=source_artifact.data,
         source_path=source_path,
+        repo_root=repo_root,
         repo_slug=repo_slug,
         reference_namespace=reference_namespace,
     )
@@ -136,6 +142,7 @@ def export_registries(
     *,
     specs: tuple[ExportSpec, ...],
     registry: ReferenceRegistry,
+    repo_root: Path,
     reference_root: Path,
     output_root: Path,
     repo_slug: str,
@@ -147,6 +154,7 @@ def export_registries(
     Args:
         specs: Repo-owned export specifications.
         registry: Loaded reference registry.
+        repo_root: Repository root used to produce portable relative paths.
         reference_root: Reference artifact root.
         output_root: Generated output root.
         repo_slug: Owning repository slug.
@@ -160,6 +168,7 @@ def export_registries(
         export_registry(
             spec=spec,
             registry=registry,
+            repo_root=repo_root,
             reference_root=reference_root,
             output_root=output_root,
             repo_slug=repo_slug,

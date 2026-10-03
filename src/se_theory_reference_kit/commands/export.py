@@ -45,6 +45,7 @@ def run_export_command(args: Namespace) -> int:
     results = export_registries(
         specs=command_context.export_specs,
         registry=registry,
+        repo_root=command_context.repo_root,
         reference_root=reference_root,
         output_root=output_root,
         repo_slug=command_context.config.repo_slug,

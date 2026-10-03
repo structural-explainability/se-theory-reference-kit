@@ -18,6 +18,7 @@ from se_theory_reference_kit.validation.registry import Check, CheckFunc, CheckR
 from se_theory_reference_kit.validation.runner import RunReport, run_checks
 
 __all__ = [
+    "DEFAULT_CHECKS",
     "Check",
     "CheckFunc",
     "CheckRegistry",
@@ -26,7 +27,6 @@ __all__ = [
     "CheckStatus",
     "ReferenceRunContext",
     "RunReport",
-    "run_checks",
     "default_registry",
-    "DEFAULT_CHECKS",
+    "run_checks",
 ]
