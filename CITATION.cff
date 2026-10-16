@@ -12,8 +12,8 @@ message: "If you use this work, please cite it using the metadata in CITATION.cf
 type: software
 
 title: "SE Theory: Reference Kit"
-version: "0.4.0"
-date-released: "2026-10-03"
+version: "0.4.1"
+date-released: "2026-10-16"
 
 authors:
   - family-names: Case
@@ -21,7 +21,6 @@ authors:
     orcid: "https://orcid.org/0000-0001-6165-7389"
     affiliation: "Northwest Missouri State University, School of Computer Science and Information Systems, Maryville, MO, USA"
 
-year: 2026
 repository-code: "https://github.com/structural-explainability/se-theory-reference-kit"
 url: "https://github.com/structural-explainability/se-theory-reference-kit"
 

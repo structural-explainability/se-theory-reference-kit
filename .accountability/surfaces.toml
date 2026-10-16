@@ -170,7 +170,7 @@ object_kind = "directory"
 paths = [
     ".github/dependabot.yml",
     ".github/workflows/**",
-    ".pre-commit-config.yaml",
+    "prek.toml",
     "uv.lock",
 ]
 description = "Automation, release, dependency lock, and repository security authority."

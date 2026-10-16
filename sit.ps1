@@ -45,7 +45,7 @@ if (Test-Path "pyproject.toml") {
 }
 
 # set up or update Python environment
-# uvx pup-clean --delete
+uvx pup-clean --delete
 uv self update
 uv python install
 uv lock --upgrade
@@ -53,12 +53,12 @@ uv sync
 uv audit
 
 # set up and run git hooks
-uv run prek install --force
-uv run prek update
+uvx prek install --force
+uvx prek update
 git add -A
-uv run prek run --all-files
+uvx prek run --all-files
 # repeat if changes were made
-uv run prek run --all-files
+uvx prek run --all-files
 
 # run common chores
 uv run ruff format .

@@ -13,6 +13,18 @@ and this project adheres to **[Semantic Versioning](https://semver.org/spec/v2.0
 
 ---
 
+## [0.4.1] - 2026-10-16
+
+### Added
+
+- .protocols/research.md
+
+### Changed
+
+- uvx pup-up@latest --write to update the tooling
+
+---
+
 ## [0.4.0] - 2026-10-03
 
 ### Added
@@ -52,7 +64,7 @@ and this project adheres to **[Semantic Versioning](https://semver.org/spec/v2.0
   unavailable.
 - Removed stale project-template configuration that referenced unrelated
   coverage targets, warning filters, and research-project directories.
-- Removed stale `pre-commit` and Pyright development instructions in favor of
+- Removed stale hooks and Pyright development instructions in favor of
   `prek` and `ty`.
 
 ### Fixed
@@ -210,11 +222,11 @@ and this project adheres to **[Semantic Versioning](https://semver.org/spec/v2.0
 ## Notes on versioning and releases
 
 - We use **SemVer**:
-  - \*_MAJOR_- - breaking changes
-  - \*_MINOR_- - backward-compatible changes
-  - \*_PATCH_- - fixes, documentation, tooling
-- Versions are driven by git tags. Tag `vX.Y.Z` to release.
-- Docs are deployed per version tag and aliased to **latest**.
+  - **MAJOR** - breaking changes
+  - **MINOR** - backward-compatible changes
+  - **PATCH** - fixes, documentation, tooling
+- Versions are driven by git tags.
+- Tag `vX.Y.Z` to release.
 
 ## Release Procedure (Required)
 
@@ -238,6 +250,7 @@ uvx gha-tools autoupdate --pin=all --write .github/workflows
 
 # Audit the resulting GitHub configuration for security findings.
 uvx zizmor@latest .github/
+# one informational notice is okay
 
 # Validate.
 uvx cffconvert --validate
@@ -293,7 +306,8 @@ git push origin :refs/tags/vX.Z.Y
 
 ## Links
 
-[Unreleased]: https://github.com/structural-explainability/se-theory-reference-kit/compare/v0.4.0...HEAD
+[Unreleased]: https://github.com/structural-explainability/se-theory-reference-kit/compare/v0.4.1...HEAD
+[0.4.1]: https://github.com/structural-explainability/se-theory-reference-kit/releases/tag/v0.4.1
 [0.4.0]: https://github.com/structural-explainability/se-theory-reference-kit/releases/tag/v0.4.0
 [0.3.1]: https://github.com/structural-explainability/se-theory-reference-kit/releases/tag/v0.3.1
 [0.3.0]: https://github.com/structural-explainability/se-theory-reference-kit/releases/tag/v0.3.0
